@@ -1,10 +1,10 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36" version="26.0.6">
   <diagram name="Page-1" id="ditq6TT-ULRenWaYCBOm">
-    <mxGraphModel dx="683" dy="466" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="508" dy="346" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="n8QMbI-Mnah7mbgpFxKV-7" value="Admin/Teacher" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+        <mxCell id="n8QMbI-Mnah7mbgpFxKV-7" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
           <mxGeometry x="60" y="100" width="30" height="60" as="geometry" />
         </mxCell>
         <mxCell id="n8QMbI-Mnah7mbgpFxKV-12" value="" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1" target="n8QMbI-Mnah7mbgpFxKV-13">
@@ -22,7 +22,7 @@
             <mxPoint x="165" y="150" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="n8QMbI-Mnah7mbgpFxKV-15" value="login" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="n8QMbI-Mnah7mbgpFxKV-15" value="logout" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="145" y="120" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="n8QMbI-Mnah7mbgpFxKV-16" value="" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1" target="n8QMbI-Mnah7mbgpFxKV-17">
@@ -31,7 +31,7 @@
             <mxPoint x="160" y="190" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="n8QMbI-Mnah7mbgpFxKV-17" value="login" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="n8QMbI-Mnah7mbgpFxKV-17" value="" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="140" y="160" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="n8QMbI-Mnah7mbgpFxKV-18" value="Student" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
