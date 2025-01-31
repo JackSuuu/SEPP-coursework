@@ -170,8 +170,11 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="jjJ54RiIyIKL-bKRmAc7-1" value="SuperUser" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+        <mxCell id="jjJ54RiIyIKL-bKRmAc7-1" value="AuthenticatedUser" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
           <mxGeometry x="750" y="70" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="jjJ54RiIyIKL-bKRmAc7-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="jjJ54RiIyIKL-bKRmAc7-1" target="jjJ54RiIyIKL-bKRmAc7-1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
