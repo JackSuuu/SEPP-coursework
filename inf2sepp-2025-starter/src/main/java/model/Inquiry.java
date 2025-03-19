@@ -8,8 +8,14 @@ public class Inquiry {
     private final String subject;
     private final String content;
     private String assignedTo;
+    private String courseCode;
 
     public Inquiry(String inquirerEmail, String subject, String content) {
+        this(inquirerEmail, subject, content, null);
+    }
+
+    public Inquiry(String inquirerEmail, String subject, String content, String courseCode) {
+        this.courseCode = courseCode;
         this.createdAt = LocalDateTime.now();
         this.inquirerEmail = inquirerEmail;
         this.subject = subject;
@@ -38,5 +44,9 @@ public class Inquiry {
 
     public void setAssignedTo(String assignedTo) {
         this.assignedTo = assignedTo;
+    }
+
+    public String getCourseCode() {
+        return courseCode;
     }
 }

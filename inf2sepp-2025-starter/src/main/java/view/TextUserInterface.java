@@ -106,5 +106,18 @@ public class TextUserInterface implements View {
         System.out.println(inquiry.getContent());
     }
 
+
+    // TODO: implement these method after finish their correspond model
+    @Override
+    public void displayCourse(Course course) {
+        System.out.println("Courses Info: ");
+        course.toString();
+    }
+
+    @Override
+    public void displayTimetable(Timetable timetable) {
+        System.out.println("Student Timetable: ");
+    }
+
     
 }

@@ -158,4 +158,167 @@ public class AdminStaffController extends StaffController {
         );
         view.displaySuccess("Inquiry has been reassigned");
     }
+
+    public void manageCourse() {
+        while (true) {
+            String[] options = {"Add a new course", "Remove an existing course", "View all courses"};
+            int selection = selectFromMenu(options, "Back to main menu");
+            
+            if (selection == -1) {
+                return;
+            } else if (selection == 0) {
+                // Add new course
+                addCourse();
+            } else if (selection == 1) {
+                // Remove course
+                removeCourse();
+            } else if (selection == 2) {
+                // View all courses
+                viewAllCourses();
+            }
+        }
+    }
+    
+    private void addCourse() {
+        String courseCode = view.getInput("Enter course code: ");
+        // Check if course already exists
+        if (sharedContext.getCourses().stream().anyMatch(c -> c.getCourseCode().equals(courseCode))) {
+            view.displayError("A course with this code already exists.");
+            return;
+        }
+        
+        String name = view.getInput("Enter course name: ");
+        String description = view.getInput("Enter course description: ");
+        boolean requiresComputer = view.getYesNoInput("Does this course require a computer?");
+        String courseOrganiserName = view.getInput("Enter course organiser name: ");
+        String courseOrganiserEmail = view.getInput("Enter course organiser email: ");
+        String courseSecretaryName = view.getInput("Enter course secretary name: ");
+        String courseSecretaryEmail = view.getInput("Enter course secretary email: ");
+        
+        int requiredTutorials = -1;
+        while (requiredTutorials < 0) {
+            try {
+                requiredTutorials = Integer.parseInt(view.getInput("Enter number of required tutorials: "));
+                if (requiredTutorials < 0) {
+                    view.displayError("Number of tutorials cannot be negative.");
+                }
+            } catch (NumberFormatException e) {
+                view.displayError("Please enter a valid number.");
+            }
+        }
+        
+        int requiredLabs = -1;
+        while (requiredLabs < 0) {
+            try {
+                requiredLabs = Integer.parseInt(view.getInput("Enter number of required labs: "));
+                if (requiredLabs < 0) {
+                    view.displayError("Number of labs cannot be negative.");
+                }
+            } catch (NumberFormatException e) {
+                view.displayError("Please enter a valid number.");
+            }
+        }
+        
+        // Create and add the new course
+        Course newCourse = new Course(
+            courseCode, 
+            name, 
+            description, 
+            requiresComputer, 
+            courseOrganiserName,
+            courseOrganiserEmail,
+            courseSecretaryName,
+            courseSecretaryEmail,
+            requiredTutorials,
+            requiredLabs
+        );
+        
+        sharedContext.addCourse(newCourse);
+        
+        // Send notification email to admin staff
+        String emailSubject = "New Course Added: " + courseCode;
+        String emailContent = "A new course has been added to the system:\n\n" +
+                             "Course Code: " + courseCode + "\n" +
+                             "Name: " + name + "\n" +
+                             "Description: " + description + "\n" +
+                             "Requires Computer: " + (requiresComputer ? "Yes" : "No") + "\n" +
+                             "Organiser: " + courseOrganiserName + " (" + courseOrganiserEmail + ")\n" +
+                             "Secretary: " + courseSecretaryName + " (" + courseSecretaryEmail + ")\n" +
+                             "Required Tutorials: " + requiredTutorials + "\n" +
+                             "Required Labs: " + requiredLabs;
+                             
+        email.sendEmail(
+            ((AuthenticatedUser) sharedContext.currentUser).getEmail(),
+            SharedContext.ADMIN_STAFF_EMAIL,
+            emailSubject,
+            emailContent
+        );
+        
+        view.displaySuccess("Course " + courseCode + " has been successfully added.");
+    }
+    
+    private void removeCourse() {
+        if (sharedContext.getCourses().isEmpty()) {
+            view.displayWarning("There are no courses to remove.");
+            return;
+        }
+        
+        // Display courses and let user select one to remove
+        String[] courseOptions = sharedContext.getCourses().stream()
+                .map(c -> c.getCourseCode() + " - " + c.getName())
+                .toArray(String[]::new);
+                
+        int selection = selectFromMenu(courseOptions, "Cancel");
+        if (selection == -1) {
+            return;
+        }
+        
+        Course selectedCourse = sharedContext.getCourses().get(selection);
+        String courseCode = selectedCourse.getCourseCode();
+        
+        // Confirm deletion
+        boolean confirm = view.getYesNoInput("Are you sure you want to remove course " + courseCode + "?");
+        if (!confirm) {
+            view.displayInfo("Course removal cancelled.");
+            return;
+        }
+        
+        // Remove the course
+        sharedContext.removeCourse(courseCode);
+        
+        // Send notification email
+        String emailSubject = "Course Removed: " + courseCode;
+        String emailContent = "The following course has been removed from the system:\n\n" +
+                             "Course Code: " + courseCode + "\n" +
+                             "Name: " + selectedCourse.getName();
+                           
+        email.sendEmail(
+            ((AuthenticatedUser) sharedContext.currentUser).getEmail(),
+            SharedContext.ADMIN_STAFF_EMAIL,
+            emailSubject,
+            emailContent
+        );
+        
+        view.displaySuccess("Course " + courseCode + " has been successfully removed.");
+    }
+    
+    private void viewAllCourses() {
+        if (sharedContext.getCourses().isEmpty()) {
+            view.displayWarning("There are no courses in the system.");
+            return;
+        }
+        
+        view.displayInfo("=== All Courses ===");
+        for (Course course : sharedContext.getCourses()) {
+            view.displayInfo(
+                course.getCourseCode() + " - " + course.getName() + "\n" +
+                "Description: " + course.getDescription() + "\n" +
+                "Organiser: " + course.getCourseOrganiserName() + "\n" +
+                "Required Tutorials: " + course.getRequiredTutorials() + ", Labs: " + course.getRequiredLabs() + "\n"
+            );
+            view.displayDivider();
+        }
+        
+        view.getInput("Press Enter to continue...");
+    }
 }

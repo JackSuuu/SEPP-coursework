@@ -3,6 +3,8 @@ package view;
 import model.FAQ;
 import model.FAQSection;
 import model.Inquiry;
+import model.Course;
+import model.Timetable;
 
 public interface View {
     String getInput(String prompt);
@@ -16,4 +18,6 @@ public interface View {
     void displayFAQ(FAQ faq);
     void displayFAQSection(FAQSection section);
     void displayInquiry(Inquiry inquiry);
+    void displayCourse(Course course);
+    void displayTimetable(Timetable timetable);
 }

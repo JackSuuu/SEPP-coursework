@@ -14,31 +14,29 @@ public class MenuController extends Controller {
         LOGIN,
         CONSULT_FAQ,
         CONTACT_STAFF,
-        VIEW_COURSE_LIST,
-        VIEW_COURSE_DETAILS
+        VIEW_COURSES,
+        VIEW_SPECIFIC_COURSES
     }
 
     public enum StudentMainMenuOption {
         LOGOUT,
         CONSULT_FAQ,
         CONTACT_STAFF,
-        VIEW_COURSE_LIST,
-        VIEW_COURSE_DETAILS
+        VIEW_COURSES,
+        VIEW_SPECIFIC_COURSES,
+        // MANAGE_TIMETABLE
     }
 
     public enum TeachingStaffMainMenuOption {
         LOGOUT,
         MANAGE_RECEIVED_QUERIES,
-        VIEW_COURSE_LIST,
-        VIEW_COURSE_DETAILS
     }
 
     public enum AdminStaffMainMenuOption {
         LOGOUT,
         MANAGE_QUERIES,
         MANAGE_FAQ,
-        VIEW_COURSE_LIST,
-        VIEW_COURSE_DETAILS
+        MANAGE_COURSES
     }
 
     public void mainMenu() {
@@ -60,7 +58,7 @@ public class MenuController extends Controller {
                 case "Guest" -> endLoop = handleGuestMainMenu();
                 case "Student" -> endLoop = handleStudentMainMenu();
                 case "TeachingStaff" -> endLoop = handleTeachingStaffMainMenu();
-                case "AdminStaff" -> endLoop = handleAdminStaffMainMenu();
+                // case "AdminStaff" -> endLoop = handleAdminStaffMainMenu();
             }
         }
 
@@ -72,13 +70,17 @@ public class MenuController extends Controller {
         if (optionNo == -1) {
             return true;
         }
-        // TODO: add view_course_list, view_course_details in controller
+
         GuestMainMenuOption option = GuestMainMenuOption.values()[optionNo];
         switch (option) {
             case LOGIN -> new GuestController(sharedContext, view, auth, email).login();
             case CONSULT_FAQ -> new InquirerController(sharedContext, view, auth, email).consultFAQ();
             case CONTACT_STAFF -> new InquirerController(sharedContext, view, auth, email).contactStaff();
-            case VIEW_COURSE_LIST -> new 
+            case VIEW_COURSES -> new ViewerController(sharedContext, view, auth, email).viewCourses();
+            case VIEW_SPECIFIC_COURSES -> {
+                String courseCode = view.getInput("Enter course code"); // ✅ Declare inside block
+                new ViewerController(sharedContext, view, auth, email).viewSpecificCourse(courseCode);
+            }
         }
         return false;
     }
@@ -93,6 +95,12 @@ public class MenuController extends Controller {
             case LOGOUT -> new AuthenticatedUserController(sharedContext, view, auth, email).logout();
             case CONSULT_FAQ -> new InquirerController(sharedContext, view, auth, email).consultFAQ();
             case CONTACT_STAFF -> new InquirerController(sharedContext, view, auth, email).contactStaff();
+            case VIEW_COURSES -> new ViewerController(sharedContext, view, auth, email).viewCourses();
+            case VIEW_SPECIFIC_COURSES -> {
+                String courseCode = view.getInput("Enter course code"); // ✅ Declare inside block
+                new ViewerController(sharedContext, view, auth, email).viewSpecificCourse(courseCode);
+            }
+            // case MANAGE_TIMETABLE -> new StudentController(sharedContext, view, auth, email).manageTimetable();
         }
         return false;
     }
@@ -110,17 +118,21 @@ public class MenuController extends Controller {
         return false;
     }
 
-    private boolean handleAdminStaffMainMenu() {
-        int optionNo = selectFromMenu(AdminStaffMainMenuOption.values(), "Exit");
-        if (optionNo == -1) {
-            return true;
-        }
-        AdminStaffMainMenuOption option = AdminStaffMainMenuOption.values()[optionNo];
-        switch (option) {
-            case LOGOUT -> new AuthenticatedUserController(sharedContext, view, auth, email).logout();
-            case MANAGE_FAQ -> new AdminStaffController(sharedContext, view, auth, email).manageFAQ();
-            case MANAGE_QUERIES -> new AdminStaffController(sharedContext, view, auth, email).manageInquiries();
-        }
-        return false;
-    }
+    // private boolean handleAdminStaffMainMenu() {
+    //     int optionNo = selectFromMenu(AdminStaffMainMenuOption.values(), "Exit");
+    //     if (optionNo == -1) {
+    //         return true;
+    //     }
+    //     AdminStaffMainMenuOption option = AdminStaffMainMenuOption.values()[optionNo];
+    //     switch (option) {
+    //         case LOGOUT -> new AuthenticatedUserController(sharedContext, view, auth, email).logout();
+    //         case MANAGE_QUERIES -> new AdminStaffController(sharedContext, view, auth, email).manageInquiries();
+    //         case MANAGE_FAQ -> new AdminStaffController(sharedContext, view, auth, email).manageFAQ();
+    //         // ! In UML diagram, Admin only has manage_courses, but in controller, it has two method related to it
+    //         // ! SO we decide to modify it by add another method in Admin Staff Controller called manageCourse()
+    //         case MANAGE_COURSES -> new AdminStaffController(sharedContext, view, auth, email).ManageCourse();
+            
+    //     }
+    //     return false;
+    // }
 }
