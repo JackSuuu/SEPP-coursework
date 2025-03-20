@@ -5,15 +5,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Lecture extends Activity {
-    private final int capacity;
+    private final boolean recordingEnabled;
 
-    public Lecture(int id, LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, String location, DayOfWeek day, int capacity) {
+    public Lecture(int id, LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, String location, DayOfWeek day, boolean recordingEnabled) {
         super(id, startDate, startTime, endDate, endTime, location, day);
-        this.capacity = capacity;
+        this.recordingEnabled = recordingEnabled;
     }
 
     @Override
     public String toString() {
-        return super.toString() + ", Capacity: " + capacity;
+        return super.toString() + ", Recording Enabled: " + recordingEnabled;
     }
 }

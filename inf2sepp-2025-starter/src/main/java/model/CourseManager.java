@@ -2,15 +2,16 @@ package model;
 
 import java.util.ArrayList;
 
-public class CourseManager extends SharedContext {
+public class CourseManager {
     // private Timetable Timetable = new Timetable();
-    private ArrayList<Course> courseArray = new ArrayList<>();
-    
+    private final ArrayList<Course> courseArray = new ArrayList<>();
+    private final ArrayList<Timetable> timetablesArray = new ArrayList<>();
+     
     // public Timetable getTimetable() {
     //     return Timetable;
     // }
 
-    // ! To support store all added course and remove
+    // To support store all added course and remove
     public ArrayList<Course> getCourseArray() {
         return courseArray;
     }
@@ -38,19 +39,24 @@ public class CourseManager extends SharedContext {
         
     }
 
-    public void removeCourse(String courseCode) {
+    // ! modify this method to boolean, so we can testify if the course been add successfully
+    public boolean removeCourse(String courseCode) {
         Course delete_course = null;
         for (Course course: getCourseArray()) {
-            if (course.getCourseCode() == courseCode) {
+            if (course.getCourseCode().equals(courseCode)) {
                 delete_course = course;
+                break;
             }
         };
         if (delete_course == null) {
-            System.out.println(courseCode + "has error, course not found");
+            System.out.println(courseCode + " has error, course not found");
+            return false;
         } else {
             getCourseArray().remove(delete_course);
+            return true;
         }
     }
+
 
     // public boolean addCourseToStudentTimetable(String studentEmail, String courseCode) {
     //     Course course = getTimetable().getCourse(courseCode);
@@ -83,7 +89,11 @@ public class CourseManager extends SharedContext {
         for (Course course : getCourseArray()) {
             result.add(course.toString());
         }
-        return result.toString();
+        if (result.isEmpty()) {
+            return "\nNot course available in the system now\n";
+        } else {
+            return result.toString();
+        }
     }
 
     public String viewCourse(String code) {
@@ -102,6 +112,7 @@ public class CourseManager extends SharedContext {
         return String.format("%s: %s - %s", 
                             selectedCourse.toString());
     }
+
 
     // private boolean checkChosenActivities(String courseCode, Timetable timetable) {
     //     Course course = getTimetable().getCourse(courseCode);
@@ -140,15 +151,6 @@ public class CourseManager extends SharedContext {
     //     Timetable timetable = getTimetable(studentEmail);
     //     if (timetable == null) {
     //         return "No timetable found for this student";
-    //     }
-        
-    //     StringBuilder result = new StringBuilder("Timetable for " + studentEmail + ":\n");
-    //     for (Activity activity : timetable.getActivities()) {
-    //         result.append(String.format("%s - %s (ID: %d) - %s\n", 
-    //                                    activity.getCourseCode(), 
-    //                                    activity.getType(), 
-    //                                    activity.getActivityId(), 
-    //                                    activity.getStatus()));
     //     }
         
     //     return result.toString();

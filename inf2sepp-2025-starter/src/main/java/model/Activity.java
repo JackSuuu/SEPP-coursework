@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public abstract class Activity {
-    public enum Statuses{
+    public enum Statuses {
         UNCHOSEN,
         CHOSEN
     }
@@ -17,6 +17,7 @@ public abstract class Activity {
     private LocalTime endTime;
     private String location;
     private DayOfWeek day;
+    private Statuses status;
 
     public Activity(int id, LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, String location, DayOfWeek day) {
         this.id = id;
@@ -26,22 +27,60 @@ public abstract class Activity {
         this.endTime = endTime;
         this.location = location;
         this.day = day;
+        this.status = Statuses.UNCHOSEN; // default status value
     }
 
     public boolean hasId(int id) {
         return this.id == id;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public DayOfWeek getDay() {
+        return day;
+    }
+  
+    public Statuses getStatus() {
+        return status;
+    }
+  
+    public void setStatus(Statuses status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "Activity{" +
-               "id=" + id +
-               ", startDate=" + startDate +
-               ", startTime=" + startTime +
-               ", endDate=" + endDate +
-               ", endTime=" + endTime +
-               ", location=" + location + '\'' +
-               ", day=" + day +
-               '}';
+               "\nid=" + id +
+               ",\n startDate=" + startDate +
+               ",\n startTime=" + startTime +
+               ",\n endDate=" + endDate +
+               ",\n endTime=" + endTime +
+               ",\n location='" + location + '\'' +
+               ",\n day=" + day +
+               ",\n status=" + status +
+               "}\n";
     }
 }

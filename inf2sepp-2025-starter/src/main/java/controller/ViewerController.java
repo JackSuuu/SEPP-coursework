@@ -13,7 +13,7 @@ public class ViewerController extends Controller {
 
     public void viewCourses() {
         // Create an instance of CourseManager
-        CourseManager manager = new CourseManager(); 
+        CourseManager manager = sharedContext.getCourseManager();
     
         // Call the method on the instance
         String courses = manager.viewCourses();
@@ -24,7 +24,7 @@ public class ViewerController extends Controller {
 
     public void viewSpecificCourse(String courseCode) {
         // Create an instance of CourseManager
-        CourseManager manager = new CourseManager();
+        CourseManager manager = sharedContext.getCourseManager();
 
         // Call the method on the instance
         String course = manager.viewCourse(courseCode);

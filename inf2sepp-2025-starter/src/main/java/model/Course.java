@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import view.View;
 
 public class Course {
     public enum ActivityType {
@@ -126,10 +127,11 @@ public class Course {
 
     private List<Activity> activities = new ArrayList<>();
 
-    public void addActivity(int id, ActivityType type, LocalDate startDate, LocalTime startTime, LocalDate endDate, 
-                            LocalTime endTime, String location, DayOfWeek day, int capacity) {
+    public void addActivity(int id, String type, LocalDate startDate, LocalTime startTime, LocalDate endDate, 
+                            LocalTime endTime, String location, DayOfWeek day, int capacity, boolean recordingEnabled) {
         Activity activity;
-        switch (type) {
+        ActivityType activityType = ActivityType.valueOf(type);
+        switch (activityType) {
             case LAB:
                 activity = new Lab(id, startDate, startTime, endDate, endTime, location, day, capacity);
                 break;
@@ -137,7 +139,7 @@ public class Course {
                 activity = new Tutorial(id, startDate, startTime, endDate, endTime, location, day, capacity);
                 break;
             case LECTURE:
-                activity = new Lecture(id, startDate, startTime, endDate, endTime, location, day, capacity);
+                activity = new Lecture(id, startDate, startTime, endDate, endTime, location, day, recordingEnabled);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown activity type: " + type);
@@ -149,23 +151,29 @@ public class Course {
         activities.clear();
     }
 
+    public void viewActivities() {
+        for (Activity activity : activities) {
+            System.out.println(activity);
+        }
+    }
+
     public boolean hasCode(String code) {
         return this.courseCode.equals(code);
     }
 
     @Override
     public String toString() {
-        return "Course{" +
-               "courseCode='" + courseCode + '\'' +
-               ", name='" + name + '\'' +
-               ", description='" + description + '\'' +
-               ", requiresComputers=" + requiresComputers +
-               ", courseOrganiserName='" + courseOrganiserName + '\'' +
-               ", courseOrganiserEmail='" + courseOrganiserEmail + '\'' +
-               ", courseSecretaryName='" + courseSecretaryName + '\'' +
-               ", courseSecretaryEmail='" + courseSecretaryEmail + '\'' +
-               ", requiredTutorials=" + requiredTutorials +
-               ", requiredLabs=" + requiredLabs +
-               '}';
+        return "Course -> {\n" +
+               "courseCode = '" + courseCode + '\'' +
+               ",\n name = '" + name + '\'' +
+               ",\n description = '" + description + '\'' +
+               ",\n requiresComputers = " + requiresComputers +
+               ",\n courseOrganiserName = '" + courseOrganiserName + '\'' +
+               ",\n courseOrganiserEmail = '" + courseOrganiserEmail + '\'' +
+               ",\n courseSecretaryName = '" + courseSecretaryName + '\'' +
+               ",\n courseSecretaryEmail = '" + courseSecretaryEmail + '\'' +
+               ",\n requiredTutorials = " + requiredTutorials +
+               ",\n requiredLabs = " + requiredLabs +
+               "}\n";
     }
 }

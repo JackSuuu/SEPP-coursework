@@ -12,35 +12,37 @@ public class StudentController extends Controller {
     /**
      * Manages the student's timetable by providing options for various timetable operations.
      */
-    public void manageTimetable() {
-        boolean running = true;
-        while (running) {
-            String[] options = {"Add Course", "Remove Course", "View Timetable", "Choose Activity for Course", "Return to Main Menu"};
-            int choice = view.showMenu("Timetable Management", options);
+    // TODO: implement this
+    // public void manageTimetable() {
+    //     boolean running = true;
+    //     while (running) {
+    //         String[] options = {"Add Course", "Remove Course", "View Timetable", "Choose Activity for Course", "Return to Main Menu"};
+    //         // TODO: to fix this warning
+    //         int choice = view.getYesNoInput("Timetable Management", options);
             
-            switch (choice) {
-                case 0: // Add Course
-                    String courseToAdd = view.getString("Enter the course code to add:");
-                    addCourse(courseToAdd);
-                    break;
-                case 1: // Remove Course
-                    String courseToRemove = view.getString("Enter the course code to remove:");
-                    removeCourse(courseToRemove);
-                    break;
-                case 2: // View Timetable
-                    viewTimetable();
-                    break;
-                case 3: // Choose Activity
-                    String courseCode = view.getString("Enter the course code:");
-                    String activityId = view.getString("Enter the activity ID:");
-                    chooseActivityForCourse(courseCode, activityId);
-                    break;
-                case 4: // Return
-                    running = false;
-                    break;
-            }
-        }
-    }
+    //         switch (choice) {
+    //             case 0: // Add Course
+    //                 String courseToAdd = view.getInput("Enter the course code to add:");
+    //                 addCourse(courseToAdd);
+    //                 break;
+    //             case 1: // Remove Course
+    //                 String courseToRemove = view.getInput("Enter the course code to remove:");
+    //                 removeCourse(courseToRemove);
+    //                 break;
+    //             case 2: // View Timetable
+    //                 viewTimetable();
+    //                 break;
+    //             case 3: // Choose Activity
+    //                 String courseCode = view.getInput("Enter the course code:");
+    //                 String activityId = view.getInput("Enter the activity ID:");
+    //                 chooseActivityForCourse(courseCode, activityId);
+    //                 break;
+    //             case 4: // Return
+    //                 running = false;
+    //                 break;
+    //         }
+    //     }
+    // }
 
     /**
      * Adds a course to the student's timetable.
@@ -50,9 +52,10 @@ public class StudentController extends Controller {
     public void addCourse(String courseCode) {
         // Implement logic to add course to timetable
         if (courseCode != null && !courseCode.isEmpty()) {
-            view.showMessage("Course " + courseCode + " has been added to your timetable.");
+            // TODO: add specific information when success or fail
+            view.displaySuccess(courseCode);;
         } else {
-            view.showMessage("Invalid course code. Please try again.");
+            view.displayError(courseCode);
         }
     }
 
@@ -64,9 +67,9 @@ public class StudentController extends Controller {
     public void removeCourse(String courseCode) {
         // Implement logic to remove course from timetable
         if (courseCode != null && !courseCode.isEmpty()) {
-            view.showMessage("Course " + courseCode + " has been removed from your timetable.");
+            view.displaySuccess(courseCode);
         } else {
-            view.showMessage("Invalid course code. Please try again.");
+            view.displayError(courseCode);
         }
     }
 
@@ -75,7 +78,7 @@ public class StudentController extends Controller {
      */
     public void viewTimetable() {
         // Retrieve and display the student's timetable
-        view.showMessage("Displaying your current timetable...");
+        view.displayInfo("Displaying your current timetable...");
         // In a real implementation, you would show actual timetable data
     }
 
@@ -88,9 +91,9 @@ public class StudentController extends Controller {
     public void chooseActivityForCourse(String courseCode, String activityId) {
         // Implement logic to assign activity to course
         if (courseCode != null && !courseCode.isEmpty() && activityId != null && !activityId.isEmpty()) {
-            view.showMessage("Activity " + activityId + " has been chosen for course " + courseCode + ".");
+            view.displaySuccess("Activity " + activityId + " has been chosen for course " + courseCode + ".");;
         } else {
-            view.showMessage("Invalid course code or activity ID. Please try again.");
+            view.displayError("Invalid course code or activity ID. Please try again.");;
         }
     }
 }

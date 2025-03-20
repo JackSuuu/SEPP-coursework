@@ -4,6 +4,10 @@ import external.AuthenticationService;
 import external.EmailService;
 import model.*;
 import view.View;
+import java.util.ArrayList;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import java.io.IOException;
 
@@ -117,6 +121,11 @@ public class AdminStaffController extends StaffController {
         view.displaySuccess("Created new FAQ item");
     }
 
+    // TODO: remove FAQ item to be implemented
+    // private void removeFAQItem(FAQSection currentSection) {
+
+    // }
+
     public void manageInquiries() {
         String[] inquiryTitles = getInquiryTitles(sharedContext.inquiries);
 
@@ -161,164 +170,162 @@ public class AdminStaffController extends StaffController {
 
     public void manageCourse() {
         while (true) {
-            String[] options = {"Add a new course", "Remove an existing course", "View all courses"};
+            String[] options = {"Add a new course", "Remove an existing course", "Add activity for a course", "Remove all activities", "View all courses", "View all activities"};
             int selection = selectFromMenu(options, "Back to main menu");
-            
-            if (selection == -1) {
-                return;
-            } else if (selection == 0) {
-                // Add new course
-                addCourse();
-            } else if (selection == 1) {
-                // Remove course
-                removeCourse();
-            } else if (selection == 2) {
-                // View all courses
-                viewAllCourses();
-            }
-        }
-    }
-    
-    private void addCourse() {
-        String courseCode = view.getInput("Enter course code: ");
-        // Check if course already exists
-        if (sharedContext.getCourses().stream().anyMatch(c -> c.getCourseCode().equals(courseCode))) {
-            view.displayError("A course with this code already exists.");
-            return;
-        }
-        
-        String name = view.getInput("Enter course name: ");
-        String description = view.getInput("Enter course description: ");
-        boolean requiresComputer = view.getYesNoInput("Does this course require a computer?");
-        String courseOrganiserName = view.getInput("Enter course organiser name: ");
-        String courseOrganiserEmail = view.getInput("Enter course organiser email: ");
-        String courseSecretaryName = view.getInput("Enter course secretary name: ");
-        String courseSecretaryEmail = view.getInput("Enter course secretary email: ");
-        
-        int requiredTutorials = -1;
-        while (requiredTutorials < 0) {
+
             try {
-                requiredTutorials = Integer.parseInt(view.getInput("Enter number of required tutorials: "));
-                if (requiredTutorials < 0) {
-                    view.displayError("Number of tutorials cannot be negative.");
-                }
-            } catch (NumberFormatException e) {
-                view.displayError("Please enter a valid number.");
-            }
-        }
-        
-        int requiredLabs = -1;
-        while (requiredLabs < 0) {
-            try {
-                requiredLabs = Integer.parseInt(view.getInput("Enter number of required labs: "));
-                if (requiredLabs < 0) {
-                    view.displayError("Number of labs cannot be negative.");
-                }
-            } catch (NumberFormatException e) {
-                view.displayError("Please enter a valid number.");
-            }
-        }
-        
-        // Create and add the new course
-        Course newCourse = new Course(
-            courseCode, 
-            name, 
-            description, 
-            requiresComputer, 
-            courseOrganiserName,
-            courseOrganiserEmail,
-            courseSecretaryName,
-            courseSecretaryEmail,
-            requiredTutorials,
-            requiredLabs
-        );
-        
-        sharedContext.addCourse(newCourse);
-        
-        // Send notification email to admin staff
-        String emailSubject = "New Course Added: " + courseCode;
-        String emailContent = "A new course has been added to the system:\n\n" +
-                             "Course Code: " + courseCode + "\n" +
-                             "Name: " + name + "\n" +
-                             "Description: " + description + "\n" +
-                             "Requires Computer: " + (requiresComputer ? "Yes" : "No") + "\n" +
-                             "Organiser: " + courseOrganiserName + " (" + courseOrganiserEmail + ")\n" +
-                             "Secretary: " + courseSecretaryName + " (" + courseSecretaryEmail + ")\n" +
-                             "Required Tutorials: " + requiredTutorials + "\n" +
-                             "Required Labs: " + requiredLabs;
-                             
-        email.sendEmail(
-            ((AuthenticatedUser) sharedContext.currentUser).getEmail(),
-            SharedContext.ADMIN_STAFF_EMAIL,
-            emailSubject,
-            emailContent
-        );
-        
-        view.displaySuccess("Course " + courseCode + " has been successfully added.");
-    }
+                if (selection == -1) {
+                    return;
+                } else if (selection == 0) {
+                    // Add new course
+                    CourseManager manager = sharedContext.getCourseManager();
     
-    private void removeCourse() {
-        if (sharedContext.getCourses().isEmpty()) {
-            view.displayWarning("There are no courses to remove.");
-            return;
-        }
-        
-        // Display courses and let user select one to remove
-        String[] courseOptions = sharedContext.getCourses().stream()
-                .map(c -> c.getCourseCode() + " - " + c.getName())
-                .toArray(String[]::new);
+                    String courseCode = view.getInput("Enter course code: ");
+                    String Name = view.getInput("Enter course name: ");
+                    String Description = view.getInput("Enter course description: ");
+                    Boolean requiresComputer = view.getYesNoInput("Does it requires computer?");
+                    String courseOrganiserName = view.getInput("Enter course organiser name: ");
+                    String courseOrganiserEmail = view.getInput("Enter course organiser Email: ");
+                    String courseSecretaryName = view.getInput("Enter course secretary name: ");
+                    String courseSecretaryEmail = view.getInput("Enter course secretary Email: ");
+                    int requiredTutorials = Integer.parseInt(view.getInput("Enter the number of Tutorials required: "));
+                    int requiredLabs = Integer.parseInt(view.getInput("Enter the number of Labs required: "));
+    
+                    manager.addCourse(courseCode, Name, Description, requiresComputer, courseOrganiserName, courseOrganiserEmail, courseSecretaryName, courseSecretaryEmail, requiredTutorials, requiredLabs);
+                    view.displaySuccess("Course added successfully.");
+                } else if (selection == 1) {
+                    // Remove course
+                    CourseManager manager = sharedContext.getCourseManager();
+
+                    String courseCode = view.getInput("Enter course code for your course want to remove: ");
+                    boolean removed = manager.removeCourse(courseCode);
+                    if (removed) {
+                        view.displaySuccess("Course removed successfully.");
+                    } else {
+                        view.displayError("Course not found.");
+                    }
+
+                } else if (selection == 2) {
+                    CourseManager manager = sharedContext.getCourseManager();
+
+                    String courseCode = view.getInput("Enter course code for the course you want to add activities: ");
+                    ArrayList<Course> courses = manager.getCourseArray();
+
+                    boolean activityAdded = false;
+                    Course targetCourse = null;
+                    for (Course course : courses) {
+                        if (course.getCourseCode().equals(courseCode)) {
+                            targetCourse = course;
+                            break;
+                        }
+                    }
+                    if (targetCourse != null) {
+                        int activity_id = Integer.parseInt(view.getInput("Enter activity id: "));
+                        String startDate = view.getInput("Enter start date in format [yyyy-MM-dd]: ");
+                        String startTime = view.getInput("Enter start time in format [HH:mm:ss]: ");
+                        String endDate = view.getInput("Enter end date in format [yyyy-MM-dd]: ");
+                        String endTime = view.getInput("Enter end Time in format [HH:mm:ss]: ");
+                        String location = view.getInput("Enter location: ");
+                        DayOfWeek day;
+                        try {
+                            day = DayOfWeek.valueOf(view.getInput("Enter day (e.g., MONDAY): ").toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            view.displayError("Invalid day entered. Defaulting to MONDAY.");
+                            day = DayOfWeek.MONDAY;
+                        }
+                        LocalDate startLocalDate = LocalDate.parse(startDate);
+                        LocalTime startLocalTime = LocalTime.parse(startTime);
+                        LocalDate endLocalDate = LocalDate.parse(endDate);
+                        LocalTime endLocalTime = LocalTime.parse(endTime);
+                        int capacity = -1;
+                        boolean recordingEnabled = false;
+
+
+                        String activityType = view.getInput("Enter activity type (LAB, TUTORIAL, or LECTURE): ");
+                        
+                        if (activityType.equalsIgnoreCase("LECTURE")) {
+                            recordingEnabled = view.getYesNoInput("Is recording enabled?");
+                        } else {
+                            capacity = Integer.parseInt(view.getInput("Enter capacity: "));
+                        }
+                        
+                        if (activityType != null && 
+                            (activityType.equalsIgnoreCase("LECTURE") || activityType.equalsIgnoreCase("LAB") || activityType.equalsIgnoreCase("TUTORIAL"))) {
+                            activityType.toUpperCase(); // ensure the type is valid
+                            targetCourse.addActivity(activity_id, activityType, startLocalDate, startLocalTime, endLocalDate, endLocalTime, location, day, capacity, recordingEnabled);
+                            activityAdded = true;
+                        } else {
+                            view.displayError("Invalid activity type entered. Allowed types: LECTURE, LAB, or TUTORIAL.");
+                        }
+                    }
+
+                    if (activityAdded) {
+                        view.displaySuccess("Activity added successfully.");
+                    } else {
+                        view.displayError("Course not found.");
+                    }
+
+                } else if (selection == 3) {
+                    CourseManager manager = sharedContext.getCourseManager();
+
+                    String courseCode = view.getInput("Enter course code for your course activities you want to remove: ");
+                    ArrayList<Course> courses = manager.getCourseArray();
+
+                    boolean activitesRemoved = false;
+                    Course targetCourse = null;
+                    for (Course course : courses) {
+                        if (course.getCourseCode().equals(courseCode)) {
+                            targetCourse = course;
+                            break;
+                        }
+                    }
+                    if (targetCourse != null) {
+                        targetCourse.removeActivities();
+                        activitesRemoved = ! activitesRemoved;
+                    }
+
+                    if (activitesRemoved) {
+                        view.displaySuccess("Activities added successfully.");
+                    } else {
+                        view.displayError("Course not found.");
+                    }
+
+                } else if (selection == 4) {
+                    // View all courses
+                    // Create an instance of CourseManager
+                    CourseManager manager = sharedContext.getCourseManager();
                 
-        int selection = selectFromMenu(courseOptions, "Cancel");
-        if (selection == -1) {
-            return;
+                    // Call the method on the instance
+                    String courses = manager.viewCourses();
+                
+                    // Display courses
+                    System.out.println(courses);
+                } else if (selection == 5) {
+                    // View all activities
+                     // Create an instance of CourseManager
+                     CourseManager manager = sharedContext.getCourseManager();
+                     String courseCode = view.getInput("Enter course code for your course activities you want to view: ");
+                     ArrayList<Course> courses = manager.getCourseArray();
+ 
+                     Course targetCourse = null;
+                     for (Course course : courses) {
+                         if (course.getCourseCode().equals(courseCode)) {
+                             targetCourse = course;
+                             break;
+                         }
+                     }
+                     if (targetCourse != null) {
+                        targetCourse.viewActivities();;
+                    } else {
+                        view.displayError("Course not found.");
+                    }
+
+                }
+            } catch (NumberFormatException e) {
+                view.displayError("Invalid option: " + selection);
+            }
+
         }
-        
-        Course selectedCourse = sharedContext.getCourses().get(selection);
-        String courseCode = selectedCourse.getCourseCode();
-        
-        // Confirm deletion
-        boolean confirm = view.getYesNoInput("Are you sure you want to remove course " + courseCode + "?");
-        if (!confirm) {
-            view.displayInfo("Course removal cancelled.");
-            return;
-        }
-        
-        // Remove the course
-        sharedContext.removeCourse(courseCode);
-        
-        // Send notification email
-        String emailSubject = "Course Removed: " + courseCode;
-        String emailContent = "The following course has been removed from the system:\n\n" +
-                             "Course Code: " + courseCode + "\n" +
-                             "Name: " + selectedCourse.getName();
-                           
-        email.sendEmail(
-            ((AuthenticatedUser) sharedContext.currentUser).getEmail(),
-            SharedContext.ADMIN_STAFF_EMAIL,
-            emailSubject,
-            emailContent
-        );
-        
-        view.displaySuccess("Course " + courseCode + " has been successfully removed.");
     }
-    
-    private void viewAllCourses() {
-        if (sharedContext.getCourses().isEmpty()) {
-            view.displayWarning("There are no courses in the system.");
-            return;
-        }
-        
-        view.displayInfo("=== All Courses ===");
-        for (Course course : sharedContext.getCourses()) {
-            view.displayInfo(
-                course.getCourseCode() + " - " + course.getName() + "\n" +
-                "Description: " + course.getDescription() + "\n" +
-                "Organiser: " + course.getCourseOrganiserName() + "\n" +
-                "Required Tutorials: " + course.getRequiredTutorials() + ", Labs: " + course.getRequiredLabs() + "\n"
-            );
-            view.displayDivider();
-        }
-        
-        view.getInput("Press Enter to continue...");
-    }
+ 
 }
