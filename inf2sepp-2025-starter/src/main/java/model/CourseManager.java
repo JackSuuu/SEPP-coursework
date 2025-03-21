@@ -1,15 +1,16 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CourseManager {
     // private Timetable Timetable = new Timetable();
     private final ArrayList<Course> courseArray = new ArrayList<>();
     private final ArrayList<Timetable> timetablesArray = new ArrayList<>();
-     
-    // public Timetable getTimetable() {
-    //     return Timetable;
-    // }
+    
+    public ArrayList<Timetable> getTimetableArray() {
+        return timetablesArray;
+    }
 
     // To support store all added course and remove
     public ArrayList<Course> getCourseArray() {
@@ -39,7 +40,7 @@ public class CourseManager {
         
     }
 
-    // ! modify this method to boolean, so we can testify if the course been add successfully
+    // * modify this method to boolean, so we can testify if the course been add successfully
     public boolean removeCourse(String courseCode) {
         Course delete_course = null;
         for (Course course: getCourseArray()) {
@@ -57,31 +58,122 @@ public class CourseManager {
         }
     }
 
+    public boolean addCourseToStudentTimetable(String studentEmail, String courseCode) {
+        // Iterate through student time to find the target course
+        Course targetCourse = null;
+        for (Course c : getCourseArray()) {
+            if (c.getCourseCode().equals(courseCode)) {
+            targetCourse = c;
+            break;
+            }
+        }
+        if (targetCourse == null) {
+            System.out.println("Course " + courseCode + " not found\n");
+            return false;
+        }
+        
+        // Check if a Timetable for the student already exists
+        Timetable studentTimetable = null;
+        for (Timetable t : getTimetableArray()) {
+            if (t.getStudentEmail().equals(studentEmail)) {
+            studentTimetable = t;
+            break;
+            }
+        }
+        
+        // If no timetable exists, create a new one with the studentEmail
+        if (studentTimetable == null) {
+            studentTimetable = new Timetable(studentEmail);
+            getTimetableArray().add(studentTimetable);
+        }
+        
+        // Append the course into the student's timetable
+        studentTimetable.addCourse(targetCourse);
+        return true;
+    }
 
-    // public boolean addCourseToStudentTimetable(String studentEmail, String courseCode) {
-    //     Course course = getTimetable().getCourse(courseCode);
-    //     if (course == null) {
-    //         return false;
-    //     }
-        
-    //     Timetable timetable = getTimetable(studentEmail);
-    //     if (timetable == null) {
-    //         timetable = new Timetable();
-    //         getStudentTable().getStudent(studentEmail).setTimetable(timetable);
-    //     }
-        
-    //     timetable.addCourse(course);
-    //     return true;
-    // }
+    public boolean removeCourseFromStudentTimetable(String studentEmail, String courseCode) {
+        // Locate the student's timetable
+        Timetable studentTimetable = null;
+        for (Timetable t : getTimetableArray()) {
+            if (t.getStudentEmail().equals(studentEmail)) {
+                studentTimetable = t;
+                break;
+            }
+        }
+        if (studentTimetable == null) {
+            System.out.println("Timetable for student " + studentEmail + " not found\n");
+            return false;
+        }
 
-    // public boolean chooseActivityForCourse(String studentEmail, String courseCode, int activityId, String status) {
-    //     Timetable timetable = getTimetable(studentEmail);
-    //     if (timetable == null) {
-    //         return false;
-    //     }
+        // Find the course in the student's timetable
+        Course targetCourse = null;
+        for (Course c : getCourseArray()) {
+            if (c.getCourseCode().equals(courseCode)) {
+                targetCourse = c;
+                break;
+            }
+        }
+        if (targetCourse == null) {
+            System.out.println("Course " + courseCode + " not found in student's timetable\n");
+            return false;
+        }
+
+        // Remove the course from the student's timetable
+        studentTimetable.removeCourse(targetCourse);
+        return true;
+    }
+
+    // !BUG
+    public boolean chooseActivityForCourse(String studentEmail, String courseCode, int activityId, String status) {
+        // Find the student's timetable, or create one if not found
+        Timetable studentTimetable = null;
+        for (Timetable t : getTimetableArray()) {
+            if (t.getStudentEmail().equals(studentEmail)) {
+                studentTimetable = t;
+                break;
+            }
+        }
+        if (studentTimetable == null) {
+            studentTimetable = new Timetable(studentEmail);
+            getTimetableArray().add(studentTimetable);
+        }
         
-    //     return timetable.setActivityStatus(courseCode, activityId, status);
-    // }
+        // Find the target course by courseCode
+        Course targetCourse = null;
+        for (Course course : getCourseArray()) {
+            if (course.getCourseCode().equals(courseCode)) {
+                targetCourse = course;
+                break;
+            }
+        }
+        if (targetCourse == null) {
+            System.out.println("Course " + courseCode + " not found\n");
+            return false;
+        }
+        
+        // Find the specific activity in the course using activityId.
+        List<Activity> activities = targetCourse.getActivities();
+        Activity selectedActivity = null;
+        for (Activity activity : activities) {
+            if (activity.getId() == activityId) {
+                // Set the status using the provided parameter.
+                activity.setStatus(status);
+                selectedActivity = activity;
+                break;
+            }
+        }
+        if (selectedActivity == null) {
+            System.out.println("Activity " + activityId + " not found in course " + courseCode + "\n");
+            return false;
+        } else {
+            // Use addTimeSlots to add the activity into the student's timetable.
+            // The method expects a list, so we wrap the selected activity.
+            int slotsAdded = studentTimetable.addTimeSlots(courseCode, java.util.Collections.singletonList(selectedActivity));
+            // Successful addition if at least one slot was added.
+            return slotsAdded > 0;
+        }
+    }
 
     public String viewCourses() {
         ArrayList<String> result = new ArrayList<>();;
@@ -100,60 +192,48 @@ public class CourseManager {
         Course selectedCourse = null;
 
         for (Course course : getCourseArray()) {
-            if (course.getCourseCode() == code) {
+            if (course.getCourseCode().equals(code)) {
                 selectedCourse = course;
             }
         }
 
         if (selectedCourse == null) {
-            return "Course not found";
+            return "Course not found\n";
         }
         
-        return String.format("%s: %s - %s", 
-                            selectedCourse.toString());
+        return selectedCourse.toString();
     }
 
+    private boolean checkChosenActivities(String courseCode, Timetable timetable) {
+        // Check if any activity in the course has already been chosen.
+        // We'll locate the course from the system's course array and inspect its activities.
+        for (Course course : getCourseArray()) {
+            if (course.getCourseCode().equals(courseCode)) {
+                for (Activity activity : course.getActivities()) {
+                    if ("CHOSEN".equals(activity.getStatus())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
-    // private boolean checkChosenActivities(String courseCode, Timetable timetable) {
-    //     Course course = getTimetable().getCourse(courseCode);
-    //     if (course == null || timetable == null) {
-    //         return false;
-    //     }
-        
-    //     int tutorialCount = 0;
-    //     int labCount = 0;
-        
-    //     for (Activity activity : timetable.getActivities()) {
-    //         if (activity.getCourseCode().equals(courseCode)) {
-    //             if (activity.getType().equalsIgnoreCase("tutorial") && 
-    //                 activity.getStatus().equalsIgnoreCase("enrolled")) {
-    //                 tutorialCount++;
-    //             } else if (activity.getType().equalsIgnoreCase("lab") && 
-    //                       activity.getStatus().equalsIgnoreCase("enrolled")) {
-    //                 labCount++;
-    //             }
-    //         }
-    //     }
-        
-    //     return tutorialCount >= course.getRequiredTutorials() && 
-    //            labCount >= course.getRequiredLabs();
-    // }
+    private Timetable getTimetable(String studentEmail) {
+    for (Timetable t : getTimetableArray()) {
+        if (t.getStudentEmail().equals(studentEmail)) {
+            return t;
+        }
+    }
+    return null;
+    }
 
-    // private Timetable getTimetable(String studentEmail) {
-    //     Student student = getStudentTable().getStudent(studentEmail);
-    //     if (student == null) {
-    //         return null;
-    //     }
-    //     return student.getTimetable();
-    // }
-
-    // public String viewTimetable(String studentEmail) {
-    //     Timetable timetable = getTimetable(studentEmail);
-    //     if (timetable == null) {
-    //         return "No timetable found for this student";
-    //     }
-        
-    //     return result.toString();
-    // }
-
+    // View timetable by using student Email
+    public Timetable viewTimetable(String studentEmail) {
+        Timetable timetable = getTimetable(studentEmail);
+        if (timetable == null) {
+            return null;
+        }
+        return timetable;
+    }
 }

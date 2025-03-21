@@ -180,18 +180,95 @@ public class AdminStaffController extends StaffController {
                     // Add new course
                     CourseManager manager = sharedContext.getCourseManager();
     
-                    String courseCode = view.getInput("Enter course code: ");
-                    String Name = view.getInput("Enter course name: ");
-                    String Description = view.getInput("Enter course description: ");
-                    Boolean requiresComputer = view.getYesNoInput("Does it requires computer?");
-                    String courseOrganiserName = view.getInput("Enter course organiser name: ");
-                    String courseOrganiserEmail = view.getInput("Enter course organiser Email: ");
-                    String courseSecretaryName = view.getInput("Enter course secretary name: ");
-                    String courseSecretaryEmail = view.getInput("Enter course secretary Email: ");
-                    int requiredTutorials = Integer.parseInt(view.getInput("Enter the number of Tutorials required: "));
-                    int requiredLabs = Integer.parseInt(view.getInput("Enter the number of Labs required: "));
+                    String courseCode;
+                    do {
+                        courseCode = view.getInput("Enter course code: ");
+                        if (courseCode.trim().isEmpty()) {
+                            view.displayError("Course code cannot be empty.");
+                        }
+                    } while (courseCode.trim().isEmpty());
+
+                    String name;
+                    do {
+                        name = view.getInput("Enter course name: ");
+                        if (name.trim().isEmpty()) {
+                            view.displayError("Course name cannot be empty.");
+                        }
+                    } while (name.trim().isEmpty());
+
+                    String description;
+                    do {
+                        description = view.getInput("Enter course description: ");
+                        if (description.trim().isEmpty()) {
+                            view.displayError("Course description cannot be empty.");
+                        }
+                    } while (description.trim().isEmpty());
+
+                    Boolean requiresComputer = view.getYesNoInput("Does it require a computer?");
+
+                    String courseOrganiserName;
+                    do {
+                        courseOrganiserName = view.getInput("Enter course organiser name: ");
+                        if (courseOrganiserName.trim().isEmpty()) {
+                            view.displayError("Course organiser name cannot be empty.");
+                        }
+                    } while (courseOrganiserName.trim().isEmpty());
+
+                    String courseOrganiserEmail;
+                    do {
+                        courseOrganiserEmail = view.getInput("Enter course organiser Email: ");
+                        if (courseOrganiserEmail.trim().isEmpty()) {
+                            view.displayError("Course organiser Email cannot be empty.");
+                        }
+                    } while (courseOrganiserEmail.trim().isEmpty());
+
+                    String courseSecretaryName;
+                    do {
+                        courseSecretaryName = view.getInput("Enter course secretary name: ");
+                        if (courseSecretaryName.trim().isEmpty()) {
+                            view.displayError("Course secretary name cannot be empty.");
+                        }
+                    } while (courseSecretaryName.trim().isEmpty());
+
+                    String courseSecretaryEmail;
+                    do {
+                        courseSecretaryEmail = view.getInput("Enter course secretary Email: ");
+                        if (courseSecretaryEmail.trim().isEmpty()) {
+                            view.displayError("Course secretary Email cannot be empty.");
+                        }
+                    } while (courseSecretaryEmail.trim().isEmpty());
+
+                    int requiredTutorials = -1;
+                    while (true) {
+                        String tutorialsInput = view.getInput("Enter the number of Tutorials required: ");
+                        try {
+                            requiredTutorials = Integer.parseInt(tutorialsInput);
+                            if (requiredTutorials < 0) {
+                                view.displayError("Number of Tutorials cannot be negative.");
+                            } else {
+                                break;
+                            }
+                        } catch (NumberFormatException e) {
+                            view.displayError("Invalid number. Please enter a valid integer for Tutorials.");
+                        }
+                    }
+
+                    int requiredLabs = -1;
+                    while (true) {
+                        String labsInput = view.getInput("Enter the number of Labs required: ");
+                        try {
+                            requiredLabs = Integer.parseInt(labsInput);
+                            if (requiredLabs < 0) {
+                                view.displayError("Number of Labs cannot be negative.");
+                            } else {
+                                break;
+                            }
+                        } catch (NumberFormatException e) {
+                            view.displayError("Invalid number. Please enter a valid integer for Labs.");
+                        }
+                    }
     
-                    manager.addCourse(courseCode, Name, Description, requiresComputer, courseOrganiserName, courseOrganiserEmail, courseSecretaryName, courseSecretaryEmail, requiredTutorials, requiredLabs);
+                    manager.addCourse(courseCode, name, description, requiresComputer, courseOrganiserName, courseOrganiserEmail, courseSecretaryName, courseSecretaryEmail, requiredTutorials, requiredLabs);
                     view.displaySuccess("Course added successfully.");
                 } else if (selection == 1) {
                     // Remove course
@@ -220,11 +297,60 @@ public class AdminStaffController extends StaffController {
                         }
                     }
                     if (targetCourse != null) {
-                        int activity_id = Integer.parseInt(view.getInput("Enter activity id: "));
-                        String startDate = view.getInput("Enter start date in format [yyyy-MM-dd]: ");
-                        String startTime = view.getInput("Enter start time in format [HH:mm:ss]: ");
-                        String endDate = view.getInput("Enter end date in format [yyyy-MM-dd]: ");
-                        String endTime = view.getInput("Enter end Time in format [HH:mm:ss]: ");
+                        int activity_id;
+                        while (true) {
+                            try {
+                                activity_id = Integer.parseInt(view.getInput("Enter activity id [1(lecture), 2(tutorial) or 3(lab)]: "));
+                                if (activity_id == 1 || activity_id == 2 || activity_id == 3) {
+                                    break;
+                                } else {
+                                    view.displayError("Invalid activity id. It must be 1, 2, or 3.");
+                                }
+                            } catch (NumberFormatException e) {
+                                view.displayError("Invalid input. Please enter a valid number.");
+                            }
+                        }
+                        String startDate, startTime, endDate, endTime;
+                        
+                        while (true) {
+                            startDate = view.getInput("Enter start date in format [yyyy-MM-dd]: ");
+                            try {
+                                LocalDate.parse(startDate);
+                                break;
+                            } catch (Exception e) {
+                                view.displayError("Invalid date format. Please try again.");
+                            }
+                        }
+                        
+                        while (true) {
+                            startTime = view.getInput("Enter start time in format [HH:mm:ss]: ");
+                            try {
+                                LocalTime.parse(startTime);
+                                break;
+                            } catch (Exception e) {
+                                view.displayError("Invalid time format. Please try again.");
+                            }
+                        }
+                        
+                        while (true) {
+                            endDate = view.getInput("Enter end date in format [yyyy-MM-dd]: ");
+                            try {
+                                LocalDate.parse(endDate);
+                                break;
+                            } catch (Exception e) {
+                                view.displayError("Invalid date format. Please try again.");
+                            }
+                        }
+                        
+                        while (true) {
+                            endTime = view.getInput("Enter end Time in format [HH:mm:ss]: ");
+                            try {
+                                LocalTime.parse(endTime);
+                                break;
+                            } catch (Exception e) {
+                                view.displayError("Invalid time format. Please try again.");
+                            }
+                        }
                         String location = view.getInput("Enter location: ");
                         DayOfWeek day;
                         try {
@@ -243,14 +369,13 @@ public class AdminStaffController extends StaffController {
 
                         String activityType = view.getInput("Enter activity type (LAB, TUTORIAL, or LECTURE): ");
                         
-                        if (activityType.equalsIgnoreCase("LECTURE")) {
-                            recordingEnabled = view.getYesNoInput("Is recording enabled?");
-                        } else {
-                            capacity = Integer.parseInt(view.getInput("Enter capacity: "));
-                        }
-                        
                         if (activityType != null && 
                             (activityType.equalsIgnoreCase("LECTURE") || activityType.equalsIgnoreCase("LAB") || activityType.equalsIgnoreCase("TUTORIAL"))) {
+                            if (activityType.equalsIgnoreCase("LECTURE")) {
+                                recordingEnabled = view.getYesNoInput("Is recording enabled?");
+                            } else {
+                                capacity = Integer.parseInt(view.getInput("Enter capacity: "));
+                            }
                             activityType.toUpperCase(); // ensure the type is valid
                             targetCourse.addActivity(activity_id, activityType, startLocalDate, startLocalTime, endLocalDate, endLocalTime, location, day, capacity, recordingEnabled);
                             activityAdded = true;
@@ -262,7 +387,7 @@ public class AdminStaffController extends StaffController {
                     if (activityAdded) {
                         view.displaySuccess("Activity added successfully.");
                     } else {
-                        view.displayError("Course not found.");
+                        view.displayError("Activity added failed.");
                     }
 
                 } else if (selection == 3) {
@@ -285,9 +410,9 @@ public class AdminStaffController extends StaffController {
                     }
 
                     if (activitesRemoved) {
-                        view.displaySuccess("Activities added successfully.");
+                        view.displaySuccess("Activities removed successfully.");
                     } else {
-                        view.displayError("Course not found.");
+                        view.displayError("Activities removed failed.");
                     }
 
                 } else if (selection == 4) {

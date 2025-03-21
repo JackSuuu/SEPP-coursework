@@ -55,17 +55,29 @@ public class TimeSlot {
     public boolean isChosen() {
         return this.status.equals("CHOSEN");
     }
+    
+    public String printEvent() {
+        if (this.activityId == 1) {
+            return "LECTURE";
+        } else if (this.activityId == 2) {
+            return "TUTORIAL";
+        } else if (this.activityId == 3) {
+            return "LAB";
+        } else {
+            return "not recognized event";
+        }
+    }
 
     @Override
     public String toString() {
         return "\nTimeSlot {" +
-               "\nday = " + day +
+               "\n activityType" + printEvent() +
+               "\n, activityId = " + activityId +
+               "\n, day = " + day +
                "\n, startTime = " + startTime +
                "\n, endTime = " + endTime +
                "\n, courseCode = '" + courseCode + '\'' +
-               "\n, activityId = " + activityId +
                "\n, status = '" + status + '\'' +
                "}\n";
     }
-    
 }

@@ -41,6 +41,6 @@ public class GuestController extends Controller {
             view.displayException(e);
         }
 
-        view.displaySuccess("Logged in as " + username);
+        view.displaySuccess("Logged in as " + username + " with email: " + email);
     }
 }

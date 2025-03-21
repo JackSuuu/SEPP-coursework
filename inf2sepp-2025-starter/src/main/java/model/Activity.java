@@ -66,14 +66,14 @@ public abstract class Activity {
         return status;
     }
   
-    public void setStatus(Statuses status) {
-        this.status = status;
+    public void setStatus(String status) {
+        this.status = Statuses.valueOf(status.toUpperCase());
     }
 
     @Override
     public String toString() {
-        return "Activity{" +
-               "\nid=" + id +
+        return "Activity Attributes -> {" +
+               ",\nid=" + id +
                ",\n startDate=" + startDate +
                ",\n startTime=" + startTime +
                ",\n endDate=" + endDate +

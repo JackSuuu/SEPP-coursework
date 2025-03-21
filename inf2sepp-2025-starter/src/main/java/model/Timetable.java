@@ -7,7 +7,9 @@ import java.time.LocalTime;
 
 public class Timetable {
     private String studentEmail;
+    // * Place to store all time slots
     private ArrayList<TimeSlot> timeSlotsArrayList;
+    private ArrayList<Course> timetableCoursesArrayList;
 
     /**
      * Constructs a new Timetable for a student.
@@ -18,15 +20,47 @@ public class Timetable {
         this.studentEmail = studentEmail;
     }
 
+    public String getStudentEmail() {
+        return studentEmail;
+    }
+
     /**
-     * Adds time slots for a course.
+     * Adds a course to the timetable.
+     * 
+     * @param course the course to add
+     */
+    public void addCourse(Course course) {
+        if (timetableCoursesArrayList == null) {
+            timetableCoursesArrayList = new ArrayList<>();
+        }
+        timetableCoursesArrayList.add(course);
+    }
+
+    /**
+     * Removes a course from the timetable.
+     *
+     * @param course the course to remove
+     */
+    public void removeCourse(Course course) {
+        if (timetableCoursesArrayList != null) {
+            timetableCoursesArrayList.remove(course);
+        }
+    }
+
+    /**
+     * Adds time slots for a course. This method is supporting the add activities to student timetable
      * 
      * @param courseCode the course code
      * @param activities the activities to add
      * @return the number of slots added
      */
-    // ! use Activity as an object instead of string to ensure parameter passing
+    // * use Activity as an object instead of string to ensure parameter passing
     public int addTimeSlots(String courseCode, List<Activity> activities) {
+        // Check for conflicts using hasSlotsForCourse before adding new time slots.
+        if (hasSlotsForCourse(courseCode, activities)) {
+            // A conflict exists, so do not add new time slots.
+            return 0;
+        }
         if (timeSlotsArrayList == null) {
             timeSlotsArrayList = new ArrayList<>();
         }
@@ -74,7 +108,6 @@ public class Timetable {
      * @param endTime the end time
      * @return 0 if no conflict, otherwise a code indicating the conflict
      */
-    @SuppressWarnings("unused")
     private int checkConflicts(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
         if (timeSlotsArrayList == null) {
             return 0;
@@ -137,20 +170,17 @@ public class Timetable {
      * @param courseCode the course code
      * @return true if slots exist for the course
      */
-    // ! should have problem, need to fix
-    public boolean hasSlotsForCourse(String courseCode) {
+    public boolean hasSlotsForCourse(String courseCode, List<Activity> activities) {
         if (timeSlotsArrayList == null) {
             return false;
         }
-        // For each slot matching the course code, use checkConflicts on its time interval.
-        // The idea is that if a slot exists (i.e. causes a conflict when compared against the timetable),
-        // it means the timetable already has slots for the course.
-        for (TimeSlot slot : timeSlotsArrayList) {
-            if (slot.getCourseCode().equals(courseCode)) {
-                java.time.LocalDate date = java.time.LocalDate.now()
-                        .with(java.time.temporal.TemporalAdjusters.nextOrSame(slot.getDay()));
-                if (checkConflicts(date, slot.getStartTime(), date, slot.getEndTime()) == 1) {
-                    return true;
+        // For each activity provided, check if adding it would conflict with existing slots for the course.
+        for (Activity activity : activities) {
+            for (TimeSlot slot : timeSlotsArrayList) {
+                if (slot.getCourseCode().equals(courseCode)) {
+                    if (checkConflicts(activity.getStartDate(), activity.getStartTime(), activity.getEndDate(), activity.getEndTime()) == 1) {
+                        return true;
+                    }
                 }
             }
         }
@@ -171,10 +201,10 @@ public class Timetable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Timetable for student: ").append(studentEmail).append("\n");
+        sb.append("Timetable for student with Email: ").append(studentEmail).append("\n");
         if (timeSlotsArrayList != null) {
             for (TimeSlot slot : timeSlotsArrayList) {
-            sb.append(slot.toString()).append("\n");
+            sb.append(slot.toString());
             }
         }
         return sb.toString();

@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class FAQSection {
-    private final String topic;
+    private final String topic; // ! main difference
     private final List<FAQItem> items = new LinkedList<>();
     private FAQSection parent;
     private final List<FAQSection> subsections = new LinkedList<>();

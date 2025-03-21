@@ -12,4 +12,6 @@ public interface AuthenticationService {
      * @return JSON string response from the Authentication Service Provider
      */
     String login(String username, String password);
+
+    String getUserEmail();
 }

@@ -24,6 +24,8 @@ public class Course {
     private String courseSecretaryEmail;
     private int requiredTutorials;
     private int requiredLabs;
+    // * place to store all activities
+    private List<Activity> activities = new ArrayList<>();
 
     public Course(String courseCode, String name, String description, boolean requiresComputers,
                   String courseOrganiserName, String courseOrganiserEmail,
@@ -125,8 +127,6 @@ public class Course {
         return activities;
     }
 
-    private List<Activity> activities = new ArrayList<>();
-
     public void addActivity(int id, String type, LocalDate startDate, LocalTime startTime, LocalDate endDate, 
                             LocalTime endTime, String location, DayOfWeek day, int capacity, boolean recordingEnabled) {
         Activity activity;
@@ -153,6 +153,7 @@ public class Course {
 
     public void viewActivities() {
         for (Activity activity : activities) {
+            System.out.println("\nActivity Type: " + activity.getClass().getSimpleName());
             System.out.println(activity);
         }
     }

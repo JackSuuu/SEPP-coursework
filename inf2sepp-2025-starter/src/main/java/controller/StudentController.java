@@ -2,7 +2,10 @@ package controller;
 
 import external.AuthenticationService;
 import external.EmailService;
+import model.CourseManager;
 import model.SharedContext;
+import model.Timetable;
+import model.AuthenticatedUser;
 import view.View;
 
 public class StudentController extends Controller {
@@ -13,87 +16,89 @@ public class StudentController extends Controller {
      * Manages the student's timetable by providing options for various timetable operations.
      */
     // TODO: implement this
-    // public void manageTimetable() {
-    //     boolean running = true;
-    //     while (running) {
-    //         String[] options = {"Add Course", "Remove Course", "View Timetable", "Choose Activity for Course", "Return to Main Menu"};
-    //         // TODO: to fix this warning
-    //         int choice = view.getYesNoInput("Timetable Management", options);
-            
-    //         switch (choice) {
-    //             case 0: // Add Course
-    //                 String courseToAdd = view.getInput("Enter the course code to add:");
-    //                 addCourse(courseToAdd);
-    //                 break;
-    //             case 1: // Remove Course
-    //                 String courseToRemove = view.getInput("Enter the course code to remove:");
-    //                 removeCourse(courseToRemove);
-    //                 break;
-    //             case 2: // View Timetable
-    //                 viewTimetable();
-    //                 break;
-    //             case 3: // Choose Activity
-    //                 String courseCode = view.getInput("Enter the course code:");
-    //                 String activityId = view.getInput("Enter the activity ID:");
-    //                 chooseActivityForCourse(courseCode, activityId);
-    //                 break;
-    //             case 4: // Return
-    //                 running = false;
-    //                 break;
-    //         }
-    //     }
-    // }
+    public void manageTimetable() {
+        boolean running = true;
+        while (running) {
+            // get CourseManager and CurrentUser
+            CourseManager manager = sharedContext.getCourseManager();
+            AuthenticatedUser currentuser = (AuthenticatedUser) sharedContext.getCurrentUser();
 
-    /**
-     * Adds a course to the student's timetable.
-     * 
-     * @param courseCode The code of the course to add.
-     */
-    public void addCourse(String courseCode) {
-        // Implement logic to add course to timetable
-        if (courseCode != null && !courseCode.isEmpty()) {
-            // TODO: add specific information when success or fail
-            view.displaySuccess(courseCode);;
-        } else {
-            view.displayError(courseCode);
-        }
-    }
+            String[] options = {"Add Course", "Remove Course", "View Timetable", "Choose Activity for Course", "Return to Main Menu"};
+            view.displayDivider();
+            view.displayInfo("# Timetable Management - " + currentuser.getEmail() + '\n');
+           
+            for (int i = 0; i < options.length; i++) {
+                view.displayInfo("[" + i + "] " + options[i]);
+            }
+            int choice = -1;
+            try {
+                view.displayDivider();
+                choice = Integer.parseInt(view.getInput("Enter your choice: "));
+            } catch (NumberFormatException e) {
+                view.displayInfo("Invalid choice, please enter a valid number.");
+                continue;
+            }
 
-    /**
-     * Removes a course from the student's timetable.
-     * 
-     * @param courseCode The code of the course to remove.
-     */
-    public void removeCourse(String courseCode) {
-        // Implement logic to remove course from timetable
-        if (courseCode != null && !courseCode.isEmpty()) {
-            view.displaySuccess(courseCode);
-        } else {
-            view.displayError(courseCode);
-        }
-    }
+            switch (choice) {
+                case 0: // Add Course to timetable
+                    String courseToAdd = view.getInput("Enter the course code to add into your timetable: ");
+                    Boolean addSuccess = manager.addCourseToStudentTimetable(currentuser.getEmail(), courseToAdd);
+                    if (addSuccess) {
+                        view.displaySuccess("Course " + courseToAdd + " has been add successfully");
+                    } else {
+                        view.displayError("Course " + courseToAdd + " add fail");
+                    }
 
-    /**
-     * Displays the student's current timetable.
-     */
-    public void viewTimetable() {
-        // Retrieve and display the student's timetable
-        view.displayInfo("Displaying your current timetable...");
-        // In a real implementation, you would show actual timetable data
-    }
+                    break;
+                case 1: // Remove Course to timetable
+                    String courseToRemove = view.getInput("Enter the course code to remove: ");
+                    Boolean removeSuccess = manager.removeCourseFromStudentTimetable(currentuser.getEmail(), courseToRemove);
+                    if (removeSuccess) {
+                        view.displaySuccess("Course " + courseToRemove + " has been add successfully");
+                    } else {
+                        view.displayError("Course " + courseToRemove + " add fail");
+                    }
 
-    /**
-     * Selects a specific activity for a given course.
-     * 
-     * @param courseCode The code of the course.
-     * @param activityId The ID of the activity to choose.
-     */
-    public void chooseActivityForCourse(String courseCode, String activityId) {
-        // Implement logic to assign activity to course
-        if (courseCode != null && !courseCode.isEmpty() && activityId != null && !activityId.isEmpty()) {
-            view.displaySuccess("Activity " + activityId + " has been chosen for course " + courseCode + ".");;
-        } else {
-            view.displayError("Invalid course code or activity ID. Please try again.");;
+                    break;
+                case 2: // View Timetable
+                    Timetable timetable_view = manager.viewTimetable(currentuser.getEmail());
+                    view.displayTimetable(timetable_view);
+                    break;
+                case 3: // Choose Activity
+                    String courseCode = view.getInput("Enter the course code: ");
+                    int activity_id;
+                    while (true) {
+                        try {
+                            activity_id = Integer.parseInt(view.getInput("Enter activity id [1(lecture), 2(tutorial) or 3(lab)]: "));
+                            if (activity_id == 1 || activity_id == 2 || activity_id == 3) {
+                                break;
+                            } else {
+                                view.displayError("Invalid activity id. It must be 1, 2, or 3.");
+                            }
+                        } catch (NumberFormatException e) {
+                            view.displayError("Invalid input. Please enter a valid number.");
+                        }
+                    }
+                    String status;
+                    while (true) {
+                        status = view.getInput("Enter the status you want to set (CHOSEN or UNCHOSEN): ");
+                        if ("CHOSEN".equalsIgnoreCase(status) || "UNCHOSEN".equalsIgnoreCase(status)) {
+                            break;
+                        } else {
+                            view.displayError("Invalid status entered. Please enter CHOSEN or UNCHOSEN.");
+                        }
+                    }
+                    boolean activityChosen = manager.chooseActivityForCourse(currentuser.getEmail(), courseCode, activity_id, status);
+                    if (activityChosen) {
+                        view.displaySuccess("Activity set successfully for course " + courseCode);
+                    } else {
+                        view.displayError("Failed to set activity for course " + courseCode);
+                    }
+                    break;
+                case 4: // Return
+                    running = false;
+                    break;
+            }
         }
     }
 }

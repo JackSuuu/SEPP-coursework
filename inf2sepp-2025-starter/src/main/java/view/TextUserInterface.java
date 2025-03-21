@@ -4,7 +4,6 @@ import model.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.List;
 import java.util.Scanner;
 
 public class TextUserInterface implements View {
@@ -114,7 +113,11 @@ public class TextUserInterface implements View {
 
     @Override
     public void displayTimetable(Timetable timetable) {
-        System.out.println("Student Timetable: ");
+        if (timetable == null || timetable.equals("null")) {
+            System.out.println("Student timetable not create yet, adding a course activity to create your timetable\n");;
+        } else {
+            System.out.println("# Student Timetable: ");
+            System.out.println(timetable);
+        }
     }
-
 }
