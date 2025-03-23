@@ -5,6 +5,7 @@ import external.EmailService;
 import model.*;
 import view.View;
 import java.util.ArrayList;
+import java.util.List;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,49 +17,63 @@ public class AdminStaffController extends StaffController {
         super(sharedContext, view, auth, email);
     }
 
+    AuthenticatedUser currentuser = (AuthenticatedUser) sharedContext.getCurrentUser();
+
     public void manageFAQ() {
         FAQSection currentSection = null;
-
+        
         while (true) {
             if (currentSection == null) {
-                view.displayFAQ(sharedContext.getFAQ());
-                view.displayInfo("[-1] Return to main menu");
+            // Use FAQManager’s getRootSections() method.
+            List<FAQSection> rootSections = sharedContext.getFaqManager().getRootSections();
+            if (rootSections.size() > 0) {
+                view.displayDivider();
+                view.displayInfo("Topic option:");
+            }
+            for (int i = 0; i < rootSections.size(); i++) {
+                view.displayInfo("[" + i + "] " + rootSections.get(i).getTopic());
+            }
+            view.displayDivider();
+            view.displayInfo("[-1] Return to main menu");
             } else {
-                view.displayFAQSection(currentSection);
-                view.displayInfo("[-1] Return to " + (currentSection.getParent() == null ? "FAQ" : currentSection.getParent().getTopic()));
+            view.displayFAQSection(currentSection);
+            view.displayInfo("[-1] Return to " + (currentSection.getParent() == null ? "FAQ main menu" : currentSection.getParent().getTopic()));
             }
             view.displayInfo("[-2] Add FAQ item");
+            view.displayInfo("[-3] Remove FAQ item");
             String input = view.getInput("Please choose an option: ");
             try {
-                int optionNo = Integer.parseInt(input);
+            int optionNo = Integer.parseInt(input);
 
-                if (optionNo == -2) {
-                    addFAQItem(currentSection);
-                } else if (optionNo == -1) {
-                    if (currentSection == null) {
-                        break;
-                    } else {
-                        currentSection = currentSection.getParent();
-                    }
+            if (optionNo == -2) {
+                addFAQItem(currentSection);
+            } else if (optionNo == -3) {
+                removeFAQItem(currentSection);
+            } else if (optionNo == -1) {
+                if (currentSection == null) {
+                break;
                 } else {
-                    try {
-                        if (currentSection == null) {
-                            currentSection = sharedContext.getFAQ().getSections().get(optionNo);
-                        } else {
-                            currentSection = currentSection.getSubsections().get(optionNo);
-                        }
-                    } catch (IndexOutOfBoundsException e) {
-                        view.displayError("Invalid option: " + optionNo);
-                    }
+                currentSection = currentSection.getParent();
                 }
+            } else {
+                try {
+                if (currentSection == null) {
+                    currentSection = sharedContext.getFaqManager().getRootSections().get(optionNo);
+                } else {
+                    currentSection = currentSection.getSubsections().get(optionNo);
+                }
+                } catch (IndexOutOfBoundsException e) {
+                view.displayError("Invalid option: " + optionNo);
+                }
+            }
             } catch (NumberFormatException e) {
-                view.displayError("Invalid option: " + input);
+            view.displayError("Invalid option: " + input);
             }
         }
-    }
+        }
 
-    private void addFAQItem(FAQSection currentSection) {
-        // When adding an item at root of FAQ, creating a section is mandatory
+        private void addFAQItem(FAQSection currentSection) {
+        // When adding an item at the root of FAQ, creating a topic is mandatory.
         boolean createSection = (currentSection == null);
         if (!createSection) {
             createSection = view.getYesNoInput("Would you like to create a new topic for the FAQ item?");
@@ -66,21 +81,33 @@ public class AdminStaffController extends StaffController {
 
         if (createSection) {
             String newTopic = view.getInput("Enter new topic title: ");
-            FAQSection newSection = new FAQSection(newTopic);
+            FAQSection newSection;
             if (currentSection == null) {
-                if (sharedContext.getFAQ().getSections().stream().anyMatch(section -> section.getTopic().equals(newTopic))) {
+                // Check if the topic exists in the root sections.
+                FAQSection existing = sharedContext.getFaqManager().getSectionByTopic(newTopic);
+                if (existing != null && existing.getParent() == null) {
                     view.displayWarning("Topic '" + newTopic + "' already exists!");
-                    newSection = sharedContext.getFAQ().getSections().stream().filter(section -> section.getTopic().equals(newTopic)).findFirst().orElseThrow();
+                    newSection = existing;
                 } else {
-                    sharedContext.getFAQ().addSection(newSection);
+                    newSection = sharedContext.getFaqManager().addTopic(newTopic);
                     view.displayInfo("Created topic '" + newTopic + "'");
                 }
             } else {
-                if (currentSection.getSubsections().stream().anyMatch(section -> section.getTopic().equals(newTopic))) {
+                // Check if the topic exists under the current section.
+                boolean exists = false;
+                FAQSection found = null;
+                for (FAQSection subsection : currentSection.getSubsections()) {
+                    if (subsection.getTopic().equals(newTopic)) {
+                        exists = true;
+                        found = subsection;
+                        break;
+                    }
+                }
+                if (exists) {
                     view.displayWarning("Topic '" + newTopic + "' already exists under '" + currentSection.getTopic() + "'!");
-                    newSection = currentSection.getSubsections().stream().filter(section -> section.getTopic().equals(newTopic)).findFirst().orElseThrow();
+                    newSection = found;
                 } else {
-                    currentSection.addSubsection(newSection);
+                    newSection = sharedContext.getFaqManager().addSubtopic(currentSection, newTopic);
                     view.displayInfo("Created topic '" + newTopic + "' under '" + currentSection.getTopic() + "'");
                 }
             }
@@ -89,7 +116,8 @@ public class AdminStaffController extends StaffController {
 
         String question = view.getInput("Enter the question for new FAQ item: ");
         String answer = view.getInput("Enter the answer for new FAQ item: ");
-        currentSection.getItems().add(new FAQItem(question, answer));
+        // Use FAQManager to add the FAQ item.
+        sharedContext.getFaqManager().addFAQItem(currentSection, question, answer, null);
 
         String emailSubject = "FAQ topic '" + currentSection.getTopic() + "' updated";
         StringBuilder emailContentBuilder = new StringBuilder();
@@ -119,14 +147,53 @@ public class AdminStaffController extends StaffController {
             );
         }
         view.displaySuccess("Created new FAQ item");
-    }
+        }
 
-    // TODO: remove FAQ item to be implemented
-    // private void removeFAQItem(FAQSection currentSection) {
+        private void removeFAQItem(FAQSection currentSection) {
+        if (currentSection == null) {
+            view.displayError("No topic selected. Cannot remove a FAQ item.");
+            return;
+        }
+        List<FAQItem> items = currentSection.getItems();
+        if (items.isEmpty()) {
+            view.displayWarning("There are no FAQ items in this topic.");
+            return;
+        }
+        view.displayInfo("FAQ Items:");
+        for (int i = 0; i < items.size(); i++) {
+            view.displayInfo("[" + i + "] " + items.get(i).getQuestion());
+        }
+        String input = view.getInput("Enter the index of the FAQ item to remove: ");
+        try {
+            int itemIndex = Integer.parseInt(input);
+            if (itemIndex >= 0 && itemIndex < items.size()) {
+            items.remove(itemIndex);
+            view.displaySuccess("FAQ item removed successfully.");
 
-    // }
+            // If removal results in no more FAQ items, remove the entire topic and move up subtopics.
+            if (items.isEmpty()) {
+                FAQSection parent = currentSection.getParent();
+                if (parent != null) {
+                // Move subtopics up under the parent topic.
+                parent.getSubsections().addAll(currentSection.getSubsections());
+                parent.getSubsections().remove(currentSection);
+                } else {
+                // When the topic is a root section.
+                List<FAQSection> rootSections = sharedContext.getFaqManager().getRootSections();
+                rootSections.addAll(currentSection.getSubsections());
+                rootSections.remove(currentSection);
+                }
+                view.displaySuccess("Topic '" + currentSection.getTopic() + "' removed as it contained no FAQ items. Its subtopics were moved up one level.");
+            }
+            } else {
+            view.displayError("Invalid index: " + itemIndex);
+            }
+        } catch (NumberFormatException e) {
+            view.displayError("Invalid input. Please enter a valid number.");
+        }
+        }
 
-    public void manageInquiries() {
+        public void manageInquiries() {
         String[] inquiryTitles = getInquiryTitles(sharedContext.inquiries);
 
         while (true) {
@@ -156,6 +223,8 @@ public class AdminStaffController extends StaffController {
             }
         }
     }
+
+
 
     private void redirectInquiry(Inquiry inquiry) {
         inquiry.setAssignedTo(view.getInput("Enter assignee email: "));
@@ -270,6 +339,7 @@ public class AdminStaffController extends StaffController {
     
                     manager.addCourse(courseCode, name, description, requiresComputer, courseOrganiserName, courseOrganiserEmail, courseSecretaryName, courseSecretaryEmail, requiredTutorials, requiredLabs);
                     view.displaySuccess("Course added successfully.");
+                    email.sendEmail(currentuser.getEmail(), courseOrganiserEmail, name, description);
                 } else if (selection == 1) {
                     // Remove course
                     CourseManager manager = sharedContext.getCourseManager();

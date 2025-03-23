@@ -23,8 +23,8 @@ public class MockEmailService implements EmailService {
         }
         System.out.print(ANSI_CYAN);
         System.out.println("Email from " + sender + " to " + recipient);
-        System.out.println(subject);
-        System.out.println(content);
+        System.out.println("Subject: " + subject);
+        System.out.println("Description: " + content);
         System.out.print(ANSI_RESET);
         return STATUS_SUCCESS;
     }

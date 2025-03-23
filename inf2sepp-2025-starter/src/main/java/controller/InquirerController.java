@@ -31,7 +31,7 @@ public class InquirerController extends Controller {
         int optionNo = 0;
         while (currentSection != null || optionNo != -1) {
             if (currentSection == null) {
-                view.displayFAQ(sharedContext.getFAQ());
+                view.displayFAQ(sharedContext.getFaqManager());
                 view.displayInfo("[-1] Return to main menu");
             } else {
                 view.displayFAQSection(currentSection);
@@ -57,7 +57,7 @@ public class InquirerController extends Controller {
                 if (optionNo != -1 && optionNo != -2 && optionNo != -3) {
                     try {
                         if (currentSection == null) {
-                            currentSection = sharedContext.getFAQ().getSections().get(optionNo);
+                            currentSection = sharedContext.getFaqManager().getRootSections().get(optionNo);
                         } else {
                             currentSection = currentSection.getSubsections().get(optionNo);
                         }

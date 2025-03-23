@@ -64,11 +64,11 @@ public class TextUserInterface implements View {
     }
 
     @Override
-    public void displayFAQ(FAQ faq) {
+    public void displayFAQ(FAQManager faq) {
         System.out.println("Frequently Asked Questions");
         displayDivider();
         int i = 0;
-        for (FAQSection section : faq.getSections()) {
+        for (FAQSection section : faq.getRootSections()) {
             System.out.print("[");
             System.out.print(i++);
             System.out.print("] ");
