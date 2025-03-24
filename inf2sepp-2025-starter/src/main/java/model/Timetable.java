@@ -72,7 +72,7 @@ public class Timetable {
                 activity.getEndTime(),
                 courseCode,
                 activity.getId(),
-                activity.getStatus().toString()
+                activity.getStatus().equals(Activity.Statuses.CHOSEN) ? TimeSlot.TimeSlotStatus.CHOSEN : TimeSlot.TimeSlotStatus.UNCHOSEN
             );
             timeSlotsArrayList.add(slot);
             slotsAdded++;
@@ -152,11 +152,12 @@ public class Timetable {
      * @param activityId the ID of the activity
      * @param status the status to set
      */
-    public void choseActivity(String courseCode, int activityId, String status) {
+    public boolean chooseActivity(String courseCode, int activityId, Activity.Statuses status) {
         if (timeSlotsArrayList == null) {
-            return;
+            //TODO assign
+            return true;
         }
-        for (TimeSlot slot : timeSlotsArrayList) {
+        for (TimeSlot slot : timeSlotsArrayList) { //TODO HASHMAP HERE
             if (slot.getCourseCode().equals(courseCode) && slot.getActivityId() == activityId) {
                 slot.setStatus(status);
                 break;

@@ -9,9 +9,15 @@ public class TimeSlot {
     private final LocalTime endTime;
     public String courseCode = null;
     public int activityId = -1;
-    public String status;
+    public TimeSlotStatus status;
 
-    public TimeSlot(DayOfWeek day, LocalTime startTime, LocalTime endTime, String courseCode, int activityId, String status) {
+    enum TimeSlotStatus{
+        UNCHOSEN,
+        CHOSEN
+    }
+
+
+    public TimeSlot(DayOfWeek day, LocalTime startTime, LocalTime endTime, String courseCode, int activityId, TimeSlotStatus status) {
         this.day = day;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -40,7 +46,7 @@ public class TimeSlot {
         return this.activityId;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(TimeSlotStatus status) {
         this.status = status;
     }
 
