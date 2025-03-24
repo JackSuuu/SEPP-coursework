@@ -154,7 +154,7 @@ public class Timetable {
      */
     public boolean chooseActivity(String courseCode, int activityId, Activity.Statuses status) {
         if (timeSlotsArrayList == null) {
-            //TODO assign
+            //TODO assign :p
             return true;
         }
         for (TimeSlot slot : timeSlotsArrayList) { //TODO HASHMAP HERE
