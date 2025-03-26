@@ -152,16 +152,21 @@ public class Timetable {
      * @param activityId the ID of the activity
      * @param status the status to set
      */
-    public void choseActivity(String courseCode, int activityId, String status) {
+
+    // TODO: Move Statuses enum from Activity to Timetable based on UML diagram. Follow other TODOs.
+    public boolean chooseActivity(String courseCode, int activityId, Activity.Statuses status) {
         if (timeSlotsArrayList == null) {
-            return;
+            //TODO assign
+            //TODO assign :p
+            return true;
         }
-        for (TimeSlot slot : timeSlotsArrayList) {
+        for (TimeSlot slot : timeSlotsArrayList) { //TODO HASHMAP HERE
             if (slot.getCourseCode().equals(courseCode) && slot.getActivityId() == activityId) {
-                slot.setStatus(status);
+                slot.setStatus(status.toString());
                 break;
             }
         }
+        return false;    // Temporary? prevents errors when running
     }
 
     /**

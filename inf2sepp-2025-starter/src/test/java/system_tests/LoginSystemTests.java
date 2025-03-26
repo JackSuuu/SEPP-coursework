@@ -14,8 +14,15 @@ import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class LoginSystemTests extends TUITest {
+
+    //*
+    // Test logins for different roles (AdminStaff, TeachingStaff, Student)
+    // *//
+
     @Test
     public void testLoginAsAdminStaff() throws URISyntaxException, IOException, ParseException {
         setMockInput("admin1", "admin1pass");
@@ -51,4 +58,81 @@ public class LoginSystemTests extends TUITest {
         assertInstanceOf(AuthenticatedUser.class, context.currentUser);
         assertEquals("Student", ((AuthenticatedUser) context.currentUser).getRole());
     }
+
+    //*
+    // Test incorrect passwords or usernames.
+    // *//
+
+    @Test
+    public void testIncorrectPassword() throws URISyntaxException, IOException, ParseException {
+        setMockInput("student1", "admin1pass");
+        SharedContext context = new SharedContext();
+        GuestController guestController = new GuestController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
+
+        startOutputCapture();
+        guestController.login();
+
+        assertOutputContains("Wrong username or password");
+    }
+
+    @Test
+    public void testInvalidUsername() throws URISyntaxException, IOException, ParseException {
+        setMockInput("22", "admin1pass");
+        SharedContext context = new SharedContext();
+        GuestController guestController = new GuestController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
+
+        startOutputCapture();
+        guestController.login();
+
+        assertOutputContains("Wrong username or password");
+    }
+
+    @Test
+    public void testNullUsername() throws URISyntaxException, IOException, ParseException {
+        setMockInput(null, "admin1pass");
+        SharedContext context = new SharedContext();
+        GuestController guestController = new GuestController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
+
+        startOutputCapture();
+        guestController.login();
+
+        assertOutputContains("Wrong username or password");
+    }
+
+    @Test
+    public void testEmptyUsername() throws URISyntaxException, IOException, ParseException {
+        setMockInput("", "admin1pass");
+        SharedContext context = new SharedContext();
+        GuestController guestController = new GuestController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
+
+        startOutputCapture();
+        guestController.login();
+
+        assertOutputContains("Wrong username or password");
+    }
+
+    //*
+    // Test different capitalisations of usernames and/or passwords
+    // *//
+
+    @ParameterizedTest(name = "Login with username={0} and password={1} should fail")
+    @CsvSource({
+            "STUDENT1, student1pass",
+            "Student1, student1pass",
+            "student1, Student1PASS",
+            "STUDENT1, STUDENT1PASS",
+            "sTuDeNt1, sTuDeNt1pAsS"
+    })
+    public void testDifferentCaseUsernames(String username, String password) throws URISyntaxException, IOException, ParseException {
+        setMockInput(username, password);
+        SharedContext context = new SharedContext();
+        GuestController guestController = new GuestController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
+
+        startOutputCapture();
+        guestController.login();
+
+        assertOutputContains("Wrong username or password");
+    }
+
+
 }

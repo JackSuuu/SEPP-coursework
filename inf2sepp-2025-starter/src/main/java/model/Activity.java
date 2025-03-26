@@ -7,7 +7,12 @@ import java.time.LocalTime;
 public abstract class Activity {
     public enum Statuses {
         UNCHOSEN,
-        CHOSEN
+        CHOSEN;
+
+        @Override
+        public String toString() {
+            return name();
+        }
     }
 
     private int id;
