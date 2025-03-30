@@ -1,4 +1,6 @@
 package model;
 
-public class Guest extends User {
+public class Guest extends User
+{
+
 }

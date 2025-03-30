@@ -3,8 +3,11 @@ package model;
 import java.util.*;
 
 public class SharedContext {
+
+    //do a cheeky singleton here? Might get us more points. https://www.digitalocean.com/community/tutorials/java-singleton-design-pattern-best-practices-examples#java-singleton-pattern-implementation
+
     public static final String ADMIN_STAFF_EMAIL = "inquiries@hindeburg.ac.nz";
-    public User currentUser;
+    public User currentUser; //should this be public or can we get via the public methods?
 
     public final List<Inquiry> inquiries;
     private final CourseManager course_manager;
@@ -12,7 +15,7 @@ public class SharedContext {
     
     private final Map<String, Set<String>> faqTopicsUpdateSubscribers;
 
-    public SharedContext() {
+    public SharedContext() { //TODO model coursework diagram has this taking a View object as a parameter. why?
         this.currentUser = new Guest();
         this.inquiries = new ArrayList<>();
         course_manager = new CourseManager();
@@ -31,6 +34,8 @@ public class SharedContext {
     public User getCurrentUser() {
         return currentUser;
     }
+
+
 
     public boolean registerForFAQUpdates(String email, String topic) {
         if (faqTopicsUpdateSubscribers.containsKey(topic)) {

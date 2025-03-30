@@ -20,6 +20,7 @@ public class Inquiry {
         this.inquirerEmail = inquirerEmail;
         this.subject = subject;
         this.content = content;
+        //TODO check course code provided, and if so notify staff as per 5c?
     }
 
     public LocalDateTime getCreatedAt() {
