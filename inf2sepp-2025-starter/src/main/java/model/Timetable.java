@@ -2,6 +2,10 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import model.TimeSlot.Statuses;
+
+import java.io.ObjectInputFilter.Status;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -23,6 +27,11 @@ public class Timetable {
     public String getStudentEmail() {
         return studentEmail;
     }
+
+    public ArrayList<TimeSlot> getTimeSlotsArray() {
+        return timeSlotsArrayList;
+    }
+    
 
     /**
      * Adds a course to the timetable.
@@ -55,7 +64,7 @@ public class Timetable {
      * @return the number of slots added
      */
     // * use Activity as an object instead of string to ensure parameter passing
-    public int addTimeSlots(String courseCode, List<Activity> activities) {
+    public int addTimeSlots(String courseCode, List<Activity> activities, Statuses status) {
         // Check for conflicts using hasSlotsForCourse before adding new time slots.
         if (hasSlotsForCourse(courseCode, activities)) {
             // A conflict exists, so do not add new time slots.
@@ -72,7 +81,7 @@ public class Timetable {
                 activity.getEndTime(),
                 courseCode,
                 activity.getId(),
-                activity.getStatus().toString()
+                status
             );
             timeSlotsArrayList.add(slot);
             slotsAdded++;
@@ -153,16 +162,15 @@ public class Timetable {
      * @param status the status to set
      */
 
-    // TODO: Move Statuses enum from Activity to Timetable based on UML diagram. Follow other TODOs.
-    public boolean chooseActivity(String courseCode, int activityId, Activity.Statuses status) {
+    public boolean chooseActivity(String courseCode, int activityId) {
         if (timeSlotsArrayList == null) {
             //TODO assign
             //TODO assign :p
             return true;
         }
-        for (TimeSlot slot : timeSlotsArrayList) { //TODO HASHMAP HERE
+        for (TimeSlot slot : timeSlotsArrayList) { // TODO HASHMAP HERE
             if (slot.getCourseCode().equals(courseCode) && slot.getActivityId() == activityId) {
-                slot.setStatus(status.toString());
+                slot.setStatus(Statuses.CHOSEN);
                 break;
             }
         }

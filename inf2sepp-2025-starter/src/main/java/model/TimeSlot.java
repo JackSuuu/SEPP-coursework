@@ -4,20 +4,25 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 public class TimeSlot {
+    public enum Statuses {
+        UNCHOSEN,
+        CHOSEN;
+    }
+
     private final DayOfWeek day;
     private final LocalTime startTime;
     private final LocalTime endTime;
     public String courseCode = null;
     public int activityId = -1;
-    public String status;
+    private Statuses status;
 
-    public TimeSlot(DayOfWeek day, LocalTime startTime, LocalTime endTime, String courseCode, int activityId, String status) {
+    public TimeSlot(DayOfWeek day, LocalTime startTime, LocalTime endTime, String courseCode, int activityId, Statuses status) {
         this.day = day;
         this.startTime = startTime;
         this.endTime = endTime;
         this.courseCode = courseCode;
         this.activityId = activityId;
-        this.status = status;
+        this.status = status; // default status value
     }
 
     public DayOfWeek getDay() {
@@ -40,9 +45,6 @@ public class TimeSlot {
         return this.activityId;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
 
     public boolean hasCourseCode() {
         return this.courseCode.equals(null);
@@ -54,6 +56,14 @@ public class TimeSlot {
 
     public boolean isChosen() {
         return this.status.equals("CHOSEN");
+    }
+
+    public Statuses getStatus() {
+        return status;
+    }
+  
+    public void setStatus(Statuses status) {
+        this.status = status;
     }
     
     public String printEvent() {

@@ -5,15 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public abstract class Activity {
-    public enum Statuses {
-        UNCHOSEN,
-        CHOSEN;
-
-        @Override
-        public String toString() {
-            return name();
-        }
-    }
 
     private int id;
     private LocalDate startDate;
@@ -22,7 +13,6 @@ public abstract class Activity {
     private LocalTime endTime;
     private String location;
     private DayOfWeek day;
-    private Statuses status;
 
     public Activity(int id, LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, String location, DayOfWeek day) {
         this.id = id;
@@ -32,7 +22,6 @@ public abstract class Activity {
         this.endTime = endTime;
         this.location = location;
         this.day = day;
-        this.status = Statuses.UNCHOSEN; // default status value
     }
 
     public boolean hasId(int id) {
@@ -67,13 +56,6 @@ public abstract class Activity {
         return day;
     }
   
-    public Statuses getStatus() {
-        return status;
-    }
-  
-    public void setStatus(String status) {
-        this.status = Statuses.valueOf(status.toUpperCase());
-    }
 
     @Override
     public String toString() {
@@ -85,7 +67,6 @@ public abstract class Activity {
                ",\n endTime=" + endTime +
                ",\n location='" + location + '\'' +
                ",\n day=" + day +
-               ",\n status=" + status +
                "}\n";
     }
 }

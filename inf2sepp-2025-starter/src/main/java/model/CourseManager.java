@@ -124,8 +124,17 @@ public class CourseManager {
         return true;
     }
 
-    // !BUG
+    // ! status not working
     public boolean chooseActivityForCourse(String studentEmail, String courseCode, int activityId, String status) {
+        // Convert status string to ENUM
+        TimeSlot.Statuses statusEnum;
+        try {
+            statusEnum = TimeSlot.Statuses.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid status provided: " + status);
+            return false;
+        }
+
         // Find the student's timetable, or create one if not found
         Timetable studentTimetable = null;
         for (Timetable t : getTimetableArray()) {
@@ -152,13 +161,21 @@ public class CourseManager {
             return false;
         }
         
+        // Use checkChosenTutorials or checkChosenLabs based on the activityId before selecting the activity.
+        if (activityId == 2 && checkChosenTutorials(courseCode, studentTimetable)) {
+            System.out.println("Tutorial for course " + courseCode + " already chosen for student " + studentEmail);
+            return false;
+        }
+        if (activityId == 3 && checkChosenLabs(courseCode, studentTimetable)) {
+            System.out.println("Lab for course " + courseCode + " already chosen for student " + studentEmail);
+            return false;
+        }
+        
         // Find the specific activity in the course using activityId.
         List<Activity> activities = targetCourse.getActivities();
         Activity selectedActivity = null;
         for (Activity activity : activities) {
             if (activity.getId() == activityId) {
-                // Set the status using the provided parameter.
-                activity.setStatus(status);
                 selectedActivity = activity;
                 break;
             }
@@ -169,7 +186,7 @@ public class CourseManager {
         } else {
             // Use addTimeSlots to add the activity into the student's timetable.
             // The method expects a list, so we wrap the selected activity.
-            int slotsAdded = studentTimetable.addTimeSlots(courseCode, java.util.Collections.singletonList(selectedActivity));
+            int slotsAdded = studentTimetable.addTimeSlots(courseCode, java.util.Collections.singletonList(selectedActivity), statusEnum);
             // Successful addition if at least one slot was added.
             return slotsAdded > 0;
         }
@@ -204,15 +221,28 @@ public class CourseManager {
         return selectedCourse.toString();
     }
 
-    private boolean checkChosenActivities(String courseCode, Timetable timetable) {
-        // Check if any activity in the course has already been chosen.
-        // We'll locate the course from the system's course array and inspect its activities.
-        for (Course course : getCourseArray()) {
-            if (course.getCourseCode().equals(courseCode)) {
-                for (Activity activity : course.getActivities()) {
-                    if ("CHOSEN".equals(activity.getStatus())) {
+    private boolean checkChosenTutorials(String courseCode, Timetable timetable) {
+        // Check if any tutorial (activityId 2) in the course has already been chosen.
+        ArrayList<TimeSlot> timeSlots = timetable.getTimeSlotsArray();
+
+        for (TimeSlot slot : timeSlots) {
+            if (slot.getCourseCode().equals(courseCode)) {
+                    if (slot.getActivityId() == 2 && slot.isChosen()) {
                         return true;
-                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean checkChosenLabs(String courseCode, Timetable timetable) {
+        // Check if any lab (activityId 3) in the course has already been chosen.
+        ArrayList<TimeSlot> timeSlots = timetable.getTimeSlotsArray();
+
+        for (TimeSlot slot : timeSlots) {
+            if (slot.getCourseCode().equals(courseCode)) {
+                    if (slot.getActivityId() == 3 && slot.isChosen()) {
+                        return true;
                 }
             }
         }
