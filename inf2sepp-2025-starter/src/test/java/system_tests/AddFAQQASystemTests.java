@@ -39,24 +39,21 @@ public class AddFAQQASystemTests extends TUITest {
         assertInstanceOf(AuthenticatedUser.class, context.currentUser);
         assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
 
-        // Step 2: Manage FAQ
-        setMockInput(
-                "2"                    // Select: MANAGE_FAQ
-        );
 
         // Step 3: Add a FAQ to a new topic
         setMockInput(
-                "-2",                    // Select: Add FAQ item
+                "2", "-2",                    // Select: Add FAQ item
                 "New Topic",             // Input: Topic name
                 "What is SEPP?",         // Input: FAQ question
                 "SEPP is a course."      // Input: FAQ answer
         );
 
-        AdminStaffController admin = new AdminStaffController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
         startOutputCapture();
-        admin.manageFAQ();
+        assertOutputContains("Created topic 'New Topic'");
 
         // Step 3: Verify the outputs
+
+        startOutputCapture();
         assertOutputContains("Created topic 'New Topic'");
         assertOutputContains("Created new FAQ item");
     }

@@ -19,508 +19,594 @@ public class AdminStaffController extends StaffController {
 
     AuthenticatedUser currentuser = (AuthenticatedUser) sharedContext.getCurrentUser();
 
+    /**
+     * MANAGE FAQ
+     * Entry point for managing FAQ sections and items.
+     * Allows navigating between topics, adding, and removing FAQ entries.
+     */
     public void manageFAQ() {
         FAQSection currentSection = null;
-        
+
         while (true) {
-            if (currentSection == null) {
-            // Use FAQManager’s getRootSections() method.
+            displayFAQMenu(currentSection);
+
+            String input = view.getInput("Please choose an option: ");
+            int optionNo;
+
+            try {
+                optionNo = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                view.displayError("Invalid option: " + input);
+                continue;
+            }
+
+            // Perform action based on menu selection
+            switch (optionNo) {
+                case -2 -> addFAQItem(currentSection); // Add item to current section
+                case -3 -> removeFAQItem(currentSection); // Remove item from current section
+                case -1 -> {
+                    if (currentSection == null) return; // Exit if at root
+                    currentSection = currentSection.getParent(); // Go up one level
+                }
+                default -> currentSection = navigateToSection(currentSection, optionNo); // Go deeper into subsections
+            }
+        }
+    }
+
+    /**
+     * Displays the FAQ menu for the current context (root or a specific section).
+     *
+     * @param currentSection The section currently being viewed, or null for root.
+     */
+    private void displayFAQMenu(FAQSection currentSection) {
+        if (currentSection == null) {
             List<FAQSection> rootSections = sharedContext.getFaqManager().getRootSections();
-            if (rootSections.size() > 0) {
+            if (!rootSections.isEmpty()) {
                 view.displayDivider();
                 view.displayInfo("Topic option:");
+                for (int i = 0; i < rootSections.size(); i++) {
+                    view.displayInfo("[" + i + "] " + rootSections.get(i).getTopic());
+                }
+                view.displayDivider();
             }
-            for (int i = 0; i < rootSections.size(); i++) {
-                view.displayInfo("[" + i + "] " + rootSections.get(i).getTopic());
-            }
-            view.displayDivider();
             view.displayInfo("[-1] Return to main menu");
-            } else {
+        } else {
             view.displayFAQSection(currentSection);
-            view.displayInfo("[-1] Return to " + (currentSection.getParent() == null ? "FAQ main menu" : currentSection.getParent().getTopic()));
-            }
-            view.displayInfo("[-2] Add FAQ item");
-            view.displayInfo("[-3] Remove FAQ item");
-            String input = view.getInput("Please choose an option: ");
-            try {
-            int optionNo = Integer.parseInt(input);
-
-            if (optionNo == -2) {
-                addFAQItem(currentSection);
-            } else if (optionNo == -3) {
-                removeFAQItem(currentSection);
-            } else if (optionNo == -1) {
-                if (currentSection == null) {
-                break;
-                } else {
-                currentSection = currentSection.getParent();
-                }
-            } else {
-                try {
-                if (currentSection == null) {
-                    currentSection = sharedContext.getFaqManager().getRootSections().get(optionNo);
-                } else {
-                    currentSection = currentSection.getSubsections().get(optionNo);
-                }
-                } catch (IndexOutOfBoundsException e) {
-                view.displayError("Invalid option: " + optionNo);
-                }
-            }
-            } catch (NumberFormatException e) {
-            view.displayError("Invalid option: " + input);
-            }
-        }
+            String returnLabel = currentSection.getParent() == null ? "FAQ main menu" : currentSection.getParent().getTopic();
+            view.displayInfo("[-1] Return to " + returnLabel);
         }
 
-        private void addFAQItem(FAQSection currentSection) {
-        // When adding an item at the root of FAQ, creating a topic is mandatory.
-        boolean createSection = (currentSection == null);
-        if (!createSection) {
-            createSection = view.getYesNoInput("Would you like to create a new topic for the FAQ item?");
-        }
+        // General options available at any level
+        view.displayInfo("[-2] Add FAQ item");
+        view.displayInfo("[-3] Remove FAQ item");
+    }
 
+    /**
+     * Attempts to navigate to a subsection or root section based on user selection index.
+     *
+     * @param currentSection The current section the user is in (null if at root).
+     * @param index          The index chosen by the user.
+     * @return The new current section if navigation is valid; otherwise, the original section.
+     */
+    private FAQSection navigateToSection(FAQSection currentSection, int index) {
+        try {
+            return currentSection == null
+                    ? sharedContext.getFaqManager().getRootSections().get(index)
+                    : currentSection.getSubsections().get(index);
+        } catch (IndexOutOfBoundsException e) {
+            view.displayError("Invalid option: " + index);
+            return currentSection;
+        }
+    }
+
+
+
+    /**
+     * ADD FAQ ITEM
+     * Adds an FAQ Q&A pair to the system, optionally under a new or existing topic (FAQ section).
+     *
+     * Helper functions:
+     * - createOrFetchTopic
+     * - sendFAQUpdateEmails
+     * - buildFAQEmailContent
+     */
+    private void addFAQItem(FAQSection currentSection) {
+        // Decide whether to create a new topic section
+        boolean createSection = (currentSection == null) || view.getYesNoInput("Would you like to create a new topic for the FAQ item?");
         if (createSection) {
-            String newTopic = view.getInput("Enter new topic title: ");
-            FAQSection newSection;
-            if (currentSection == null) {
-                // Check if the topic exists in the root sections.
-                FAQSection existing = sharedContext.getFaqManager().getSectionByTopic(newTopic);
-                if (existing != null && existing.getParent() == null) {
-                    view.displayWarning("Topic '" + newTopic + "' already exists!");
-                    newSection = existing;
-                } else {
-                    newSection = sharedContext.getFaqManager().addTopic(newTopic);
-                    view.displayInfo("Created topic '" + newTopic + "'");
-                }
-            } else {
-                // Check if the topic exists under the current section.
-                boolean exists = false;
-                FAQSection found = null;
-                for (FAQSection subsection : currentSection.getSubsections()) {
-                    if (subsection.getTopic().equals(newTopic)) {
-                        exists = true;
-                        found = subsection;
-                        break;
-                    }
-                }
-                if (exists) {
-                    view.displayWarning("Topic '" + newTopic + "' already exists under '" + currentSection.getTopic() + "'!");
-                    newSection = found;
-                } else {
-                    newSection = sharedContext.getFaqManager().addSubtopic(currentSection, newTopic);
-                    view.displayInfo("Created topic '" + newTopic + "' under '" + currentSection.getTopic() + "'");
-                }
-            }
-            currentSection = newSection;
+            currentSection = createOrFetchTopic(currentSection);
         }
 
+        // Prompt for FAQ content
         String question = view.getInput("Enter the question for new FAQ item: ");
         String answer = view.getInput("Enter the answer for new FAQ item: ");
-        // Use FAQManager to add the FAQ item.
+
+        // Add the item under the current section
         sharedContext.getFaqManager().addFAQItem(currentSection, question, answer, null);
 
-        String emailSubject = "FAQ topic '" + currentSection.getTopic() + "' updated";
-        StringBuilder emailContentBuilder = new StringBuilder();
-        emailContentBuilder.append("Updated Q&As:");
-        for (FAQItem item : currentSection.getItems()) {
-            emailContentBuilder.append("\n\n");
-            emailContentBuilder.append("Q: ");
-            emailContentBuilder.append(item.getQuestion());
-            emailContentBuilder.append("\n");
-            emailContentBuilder.append("A: ");
-            emailContentBuilder.append(item.getAnswer());
-        }
-        String emailContent = emailContentBuilder.toString();
-
-        email.sendEmail(
-                ((AuthenticatedUser) sharedContext.currentUser).getEmail(),
-                SharedContext.ADMIN_STAFF_EMAIL,
-                emailSubject,
-                emailContent
-        );
-        for (String subscriberEmail : sharedContext.usersSubscribedToFAQTopic(currentSection.getTopic())) {
-            email.sendEmail(
-                    SharedContext.ADMIN_STAFF_EMAIL,
-                    subscriberEmail,
-                    emailSubject,
-                    emailContent
-            );
-        }
+        // Notify subscribers
+        sendFAQUpdateEmails(currentSection);
         view.displaySuccess("Created new FAQ item");
+    }
+
+    /**
+     * Creates a new FAQ topic section or fetches an existing one under a parent (if any).
+     *
+     * @param parentSection The parent section under which to add the topic, or null if root.
+     * @return The created or existing FAQSection instance.
+     */
+    private FAQSection createOrFetchTopic(FAQSection parentSection) {
+        String newTopic = view.getInput("Enter new topic title: ");
+
+        // Root-level topic creation
+        if (parentSection == null) {
+            FAQSection existing = sharedContext.getFaqManager().getSectionByTopic(newTopic);
+            if (existing != null && existing.getParent() == null) {
+                view.displayWarning("Topic '" + newTopic + "' already exists!");
+                return existing;
+            }
+            view.displayInfo("Created topic '" + newTopic + "'");
+            return sharedContext.getFaqManager().addTopic(newTopic);
         }
 
-        private void removeFAQItem(FAQSection currentSection) {
+        // Check if topic already exists under this parent
+        for (FAQSection subsection : parentSection.getSubsections()) {
+            if (subsection.getTopic().equals(newTopic)) {
+                view.displayWarning("Topic '" + newTopic + "' already exists under '" + parentSection.getTopic() + "'!");
+                return subsection;
+            }
+        }
+
+        view.displayInfo("Created topic '" + newTopic + "' under '" + parentSection.getTopic() + "'");
+        return sharedContext.getFaqManager().addSubtopic(parentSection, newTopic);
+    }
+
+    /**
+     * Sends FAQ update emails to admin and subscribed users.
+     *
+     * @param section The section whose FAQ content was updated.
+     */
+    private void sendFAQUpdateEmails(FAQSection section) {
+        String subject = "FAQ topic '" + section.getTopic() + "' updated";
+        String content = buildFAQEmailContent(section);
+        String sender = ((AuthenticatedUser) sharedContext.currentUser).getEmail();
+
+        // Notify admin
+        email.sendEmail(sender, SharedContext.ADMIN_STAFF_EMAIL, subject, content);
+
+        // Notify all subscribers
+        for (String subscriber : sharedContext.usersSubscribedToFAQTopic(section.getTopic())) {
+            email.sendEmail(SharedContext.ADMIN_STAFF_EMAIL, subscriber, subject, content);
+        }
+    }
+
+    /**
+     * Builds the email body content from a section's FAQ items.
+     *
+     * @param section The FAQ section to extract Q&As from.
+     * @return A string representing the full email content.
+     */
+    private String buildFAQEmailContent(FAQSection section) {
+        StringBuilder sb = new StringBuilder("Updated Q&As:");
+        for (FAQItem item : section.getItems()) {
+            sb.append("\n\nQ: ").append(item.getQuestion())
+                    .append("\nA: ").append(item.getAnswer());
+        }
+        return sb.toString();
+    }
+
+
+
+    /**
+     * REMOVE FAQ ITEM
+     * - Removes an FAQ Q-A pair from the given section.
+     *
+     * Helper functions:
+     * - displayFAQItems
+     * - isValidIndex
+     * - handleEmptyTopicAfterRemoval
+     *
+     * @param currentSection The FAQ section to remove a Q&A from.
+     */
+    private void removeFAQItem(FAQSection currentSection) {
         if (currentSection == null) {
             view.displayError("No topic selected. Cannot remove a FAQ item.");
             return;
         }
+
         List<FAQItem> items = currentSection.getItems();
         if (items.isEmpty()) {
             view.displayWarning("There are no FAQ items in this topic.");
             return;
         }
-        view.displayInfo("FAQ Items:");
-        for (int i = 0; i < items.size(); i++) {
-            view.displayInfo("[" + i + "] " + items.get(i).getQuestion());
-        }
+
+        displayFAQItems(items);
+
         String input = view.getInput("Enter the index of the FAQ item to remove: ");
         try {
             int itemIndex = Integer.parseInt(input);
-            if (itemIndex >= 0 && itemIndex < items.size()) {
-            items.remove(itemIndex);
-            view.displaySuccess("FAQ item removed successfully.");
-
-            // If removal results in no more FAQ items, remove the entire topic and move up subtopics.
-            if (items.isEmpty()) {
-                FAQSection parent = currentSection.getParent();
-                if (parent != null) {
-                // Move subtopics up under the parent topic.
-                parent.getSubsections().addAll(currentSection.getSubsections());
-                parent.getSubsections().remove(currentSection);
-                } else {
-                // When the topic is a root section.
-                List<FAQSection> rootSections = sharedContext.getFaqManager().getRootSections();
-                rootSections.addAll(currentSection.getSubsections());
-                rootSections.remove(currentSection);
-                }
-                view.displaySuccess("Topic '" + currentSection.getTopic() + "' removed as it contained no FAQ items. Its subtopics were moved up one level.");
-            }
+            if (isValidIndex(itemIndex, items.size())) {
+                items.remove(itemIndex);
+                view.displaySuccess("FAQ item removed successfully.");
+                handleEmptyTopicAfterRemoval(currentSection);
             } else {
-            view.displayError("Invalid index: " + itemIndex);
+                view.displayError("Invalid index: " + itemIndex);
             }
         } catch (NumberFormatException e) {
             view.displayError("Invalid input. Please enter a valid number.");
         }
+    }
+
+    /**
+     * Displays all FAQ items in a section with their indices.
+     *
+     * @param items List of FAQ items to display.
+     */
+    private void displayFAQItems(List<FAQItem> items) {
+        view.displayInfo("FAQ Items:");
+        for (int i = 0; i < items.size(); i++) {
+            view.displayInfo("[" + i + "] " + items.get(i).getQuestion());
+        }
+    }
+
+    /**
+     * Checks if the given index is valid within the bounds of a list.
+     *
+     * @param index The index to check.
+     * @param size  The size of the list.
+     * @return true if the index is valid, false otherwise.
+     */
+    private boolean isValidIndex(int index, int size) {
+        return index >= 0 && index < size;
+    }
+
+    /**
+     * If a section is empty after item removal, this method:
+     * - removes the section,
+     * - reattaches its subtopics to the parent or root,
+     * - and notifies the user.
+     *
+     * @param section The FAQ section to evaluate for deletion.
+     */
+    private void handleEmptyTopicAfterRemoval(FAQSection section) {
+        if (!section.getItems().isEmpty()) return;
+
+        FAQSection parent = section.getParent();
+        List<FAQSection> subsections = section.getSubsections();
+
+        if (parent != null) {
+            parent.getSubsections().addAll(subsections);
+            parent.getSubsections().remove(section);
+        } else {
+            List<FAQSection> rootSections = sharedContext.getFaqManager().getRootSections();
+            rootSections.addAll(subsections);
+            rootSections.remove(section);
         }
 
-        public void manageInquiries() {
-        String[] inquiryTitles = getInquiryTitles(sharedContext.inquiries);
+        view.displaySuccess("Topic '" + section.getTopic() + "' removed as it contained no FAQ items. Its subtopics were moved up one level.");
+    }
 
+
+
+    /**
+     * MANAGE INQUIRIES
+     * - Presents a list of inquiries to the admin.
+     * - Allows redirecting or responding to each inquiry.
+     *
+     * Helper methods:
+     * - handleInquiry(Inquiry)
+     */
+    public void manageInquiries() {
         while (true) {
             view.displayInfo("Pending inquiries");
+
+            String[] inquiryTitles = getInquiryTitles(sharedContext.inquiries);
             int selection = selectFromMenu(inquiryTitles, "Back to main menu");
-            if (selection == -1) {
-                return;
-            }
+
+            if (selection == -1) return;
+
             Inquiry selectedInquiry = sharedContext.inquiries.get(selection);
+            handleInquiry(selectedInquiry);
+        }
+    }
 
-            while (true) {
-                view.displayDivider();
-                view.displayInquiry(selectedInquiry);
-                view.displayDivider();
-                String[] followUpOptions = { "Redirect inquiry", "Respond to inquiry" };
-                int followUpSelection = selectFromMenu(followUpOptions, "Back to all inquiries");
+    /**
+     * Handles follow-up actions for a selected inquiry.
+     * Displays options to redirect or respond.
+     *
+     * @param inquiry the selected inquiry to manage
+     */
+    private void handleInquiry(Inquiry inquiry) {
+        final String REDIRECT = "Redirect inquiry";
+        final String RESPOND = "Respond to inquiry";
+        String[] followUpOptions = { REDIRECT, RESPOND };
 
-                if (followUpSelection == -1) {
-                    break;
-                } else if (followUpOptions[followUpSelection].equals("Redirect inquiry")) {
-                    redirectInquiry(selectedInquiry);
-                } else if (followUpOptions[followUpSelection].equals("Respond to inquiry")) {
-                    respondToInquiry(selectedInquiry);
-                    inquiryTitles = getInquiryTitles(sharedContext.inquiries); // required to remove responded inquiry from titles
-                    break;
+        while (true) {
+            view.displayDivider();
+            view.displayInquiry(inquiry);
+            view.displayDivider();
+
+            int choice = selectFromMenu(followUpOptions, "Back to all inquiries");
+
+            if (choice == -1) return;
+
+            String action = followUpOptions[choice];
+            switch (action) {
+                case REDIRECT -> redirectInquiry(inquiry);
+                case RESPOND -> {
+                    respondToInquiry(inquiry);
+                    return; // Exit after responding
                 }
+                default -> view.displayError("Unknown option.");
             }
         }
     }
 
 
-
+    /**
+     * REDIRECT INQUIRY
+     * - Reassigns the selected inquiry to another staff member.
+     * - Sends a notification email to the new assignee.
+     *
+     * @param inquiry the inquiry to be redirected
+     */
     private void redirectInquiry(Inquiry inquiry) {
-        inquiry.setAssignedTo(view.getInput("Enter assignee email: "));
+        String newAssignee = view.getInput("Enter assignee email: ");
+        inquiry.setAssignedTo(newAssignee);
+
         email.sendEmail(
                 SharedContext.ADMIN_STAFF_EMAIL,
-                inquiry.getAssignedTo(),
+                newAssignee,
                 "New inquiry from " + inquiry.getInquirerEmail(),
-                "Subject: " + inquiry.getSubject() + "\nPlease log into the Self Service Portal to review and respond to the inquiry."
+                "Subject: " + inquiry.getSubject() +
+                        "\nPlease log into the Self Service Portal to review and respond to the inquiry."
         );
+
         view.displaySuccess("Inquiry has been reassigned");
     }
 
+
+
+    /**
+     * MANAGE COURSE
+     * - Provides options to add, remove, and view courses and activities.
+     * - Delegates specific actions to helper handlers.
+     *
+     * Options:
+     * 0 - Add a new course
+     * 1 - Remove an existing course
+     * 2 - Add activity for a course
+     * 3 - Remove all activities
+     * 4 - View all courses
+     * 5 - View all activities
+     */
     public void manageCourse() {
+        CourseManager manager = sharedContext.getCourseManager();
+
         while (true) {
-            String[] options = {"Add a new course", "Remove an existing course", "Add activity for a course", "Remove all activities", "View all courses", "View all activities"};
+            String[] options = {
+                    "Add a new course",
+                    "Remove an existing course",
+                    "Add activity for a course",
+                    "Remove all activities",
+                    "View all courses",
+                    "View all activities"
+            };
+
             int selection = selectFromMenu(options, "Back to main menu");
 
             try {
-                if (selection == -1) {
-                    return;
-                } else if (selection == 0) {
-                    // Add new course
-                    CourseManager manager = sharedContext.getCourseManager();
-    
-                    String courseCode;
-                    do {
-                        courseCode = view.getInput("Enter course code: ");
-                        if (courseCode.trim().isEmpty()) {
-                            view.displayError("Course code cannot be empty.");
-                        }
-                    } while (courseCode.trim().isEmpty());
-
-                    String name;
-                    do {
-                        name = view.getInput("Enter course name: ");
-                        if (name.trim().isEmpty()) {
-                            view.displayError("Course name cannot be empty.");
-                        }
-                    } while (name.trim().isEmpty());
-
-                    String description;
-                    do {
-                        description = view.getInput("Enter course description: ");
-                        if (description.trim().isEmpty()) {
-                            view.displayError("Course description cannot be empty.");
-                        }
-                    } while (description.trim().isEmpty());
-
-                    Boolean requiresComputer = view.getYesNoInput("Does it require a computer?");
-
-                    String courseOrganiserName;
-                    do {
-                        courseOrganiserName = view.getInput("Enter course organiser name: ");
-                        if (courseOrganiserName.trim().isEmpty()) {
-                            view.displayError("Course organiser name cannot be empty.");
-                        }
-                    } while (courseOrganiserName.trim().isEmpty());
-
-                    String courseOrganiserEmail;
-                    do {
-                        courseOrganiserEmail = view.getInput("Enter course organiser Email: ");
-                        if (courseOrganiserEmail.trim().isEmpty()) {
-                            view.displayError("Course organiser Email cannot be empty.");
-                        }
-                    } while (courseOrganiserEmail.trim().isEmpty());
-
-                    String courseSecretaryName;
-                    do {
-                        courseSecretaryName = view.getInput("Enter course secretary name: ");
-                        if (courseSecretaryName.trim().isEmpty()) {
-                            view.displayError("Course secretary name cannot be empty.");
-                        }
-                    } while (courseSecretaryName.trim().isEmpty());
-
-                    String courseSecretaryEmail;
-                    do {
-                        courseSecretaryEmail = view.getInput("Enter course secretary Email: ");
-                        if (courseSecretaryEmail.trim().isEmpty()) {
-                            view.displayError("Course secretary Email cannot be empty.");
-                        }
-                    } while (courseSecretaryEmail.trim().isEmpty());
-
-                    int requiredTutorials = -1;
-                    while (true) {
-                        String tutorialsInput = view.getInput("Enter the number of Tutorials required: ");
-                        try {
-                            requiredTutorials = Integer.parseInt(tutorialsInput);
-                            if (requiredTutorials < 0) {
-                                view.displayError("Number of Tutorials cannot be negative.");
-                            } else {
-                                break;
-                            }
-                        } catch (NumberFormatException e) {
-                            view.displayError("Invalid number. Please enter a valid integer for Tutorials.");
-                        }
-                    }
-
-                    int requiredLabs = -1;
-                    while (true) {
-                        String labsInput = view.getInput("Enter the number of Labs required: ");
-                        try {
-                            requiredLabs = Integer.parseInt(labsInput);
-                            if (requiredLabs < 0) {
-                                view.displayError("Number of Labs cannot be negative.");
-                            } else {
-                                break;
-                            }
-                        } catch (NumberFormatException e) {
-                            view.displayError("Invalid number. Please enter a valid integer for Labs.");
-                        }
-                    }
-    
-                    manager.addCourse(courseCode, name, description, requiresComputer, courseOrganiserName, courseOrganiserEmail, courseSecretaryName, courseSecretaryEmail, requiredTutorials, requiredLabs);
-                    view.displaySuccess("Course added successfully.");
-                    email.sendEmail(currentuser.getEmail(), courseOrganiserEmail, name, description);
-                } else if (selection == 1) {
-                    // Remove course
-                    CourseManager manager = sharedContext.getCourseManager();
-
-                    String courseCode = view.getInput("Enter course code for your course want to remove: ");
-                    boolean removed = manager.removeCourse(courseCode);
-                    if (removed) {
-                        view.displaySuccess("Course removed successfully.");
-                    } else {
-                        view.displayError("Course not found.");
-                    }
-
-                } else if (selection == 2) {
-                    CourseManager manager = sharedContext.getCourseManager();
-
-                    String courseCode = view.getInput("Enter course code for the course you want to add activities: ");
-                    ArrayList<Course> courses = manager.getCourseArray();
-
-                    boolean activityAdded = false;
-                    Course targetCourse = null;
-                    for (Course course : courses) {
-                        if (course.getCourseCode().equals(courseCode)) {
-                            targetCourse = course;
-                            break;
-                        }
-                    }
-                    if (targetCourse != null) {
-                        int activity_id;
-                        while (true) {
-                            try {
-                                activity_id = Integer.parseInt(view.getInput("Enter activity id [1(lecture), 2(tutorial) or 3(lab)]: "));
-                                if (activity_id == 1 || activity_id == 2 || activity_id == 3) {
-                                    break;
-                                } else {
-                                    view.displayError("Invalid activity id. It must be 1, 2, or 3.");
-                                }
-                            } catch (NumberFormatException e) {
-                                view.displayError("Invalid input. Please enter a valid number.");
-                            }
-                        }
-                        String startDate, startTime, endDate, endTime;
-                        
-                        while (true) {
-                            startDate = view.getInput("Enter start date in format [yyyy-MM-dd]: ");
-                            try {
-                                LocalDate.parse(startDate);
-                                break;
-                            } catch (Exception e) {
-                                view.displayError("Invalid date format. Please try again.");
-                            }
-                        }
-                        
-                        while (true) {
-                            startTime = view.getInput("Enter start time in format [HH:mm:ss]: ");
-                            try {
-                                LocalTime.parse(startTime);
-                                break;
-                            } catch (Exception e) {
-                                view.displayError("Invalid time format. Please try again.");
-                            }
-                        }
-                        
-                        while (true) {
-                            endDate = view.getInput("Enter end date in format [yyyy-MM-dd]: ");
-                            try {
-                                LocalDate.parse(endDate);
-                                break;
-                            } catch (Exception e) {
-                                view.displayError("Invalid date format. Please try again.");
-                            }
-                        }
-                        
-                        while (true) {
-                            endTime = view.getInput("Enter end Time in format [HH:mm:ss]: ");
-                            try {
-                                LocalTime.parse(endTime);
-                                break;
-                            } catch (Exception e) {
-                                view.displayError("Invalid time format. Please try again.");
-                            }
-                        }
-                        String location = view.getInput("Enter location: ");
-                        DayOfWeek day;
-                        try {
-                            day = DayOfWeek.valueOf(view.getInput("Enter day (e.g., MONDAY): ").toUpperCase());
-                        } catch (IllegalArgumentException e) {
-                            view.displayError("Invalid day entered. Defaulting to MONDAY.");
-                            day = DayOfWeek.MONDAY;
-                        }
-                        LocalDate startLocalDate = LocalDate.parse(startDate);
-                        LocalTime startLocalTime = LocalTime.parse(startTime);
-                        LocalDate endLocalDate = LocalDate.parse(endDate);
-                        LocalTime endLocalTime = LocalTime.parse(endTime);
-                        int capacity = -1;
-                        boolean recordingEnabled = false;
-
-
-                        String activityType = view.getInput("Enter activity type (LAB, TUTORIAL, or LECTURE): ");
-                        
-                        if (activityType != null && 
-                            (activityType.equalsIgnoreCase("LECTURE") || activityType.equalsIgnoreCase("LAB") || activityType.equalsIgnoreCase("TUTORIAL"))) {
-                            if (activityType.equalsIgnoreCase("LECTURE")) {
-                                recordingEnabled = view.getYesNoInput("Is recording enabled?");
-                            } else {
-                                capacity = Integer.parseInt(view.getInput("Enter capacity: "));
-                            }
-                            activityType.toUpperCase(); // ensure the type is valid
-                            targetCourse.addActivity(activity_id, activityType, startLocalDate, startLocalTime, endLocalDate, endLocalTime, location, day, capacity, recordingEnabled);
-                            activityAdded = true;
-                        } else {
-                            view.displayError("Invalid activity type entered. Allowed types: LECTURE, LAB, or TUTORIAL.");
-                        }
-                    }
-
-                    if (activityAdded) {
-                        view.displaySuccess("Activity added successfully.");
-                    } else {
-                        view.displayError("Activity added failed.");
-                    }
-
-                } else if (selection == 3) {
-                    CourseManager manager = sharedContext.getCourseManager();
-
-                    String courseCode = view.getInput("Enter course code for your course activities you want to remove: ");
-                    ArrayList<Course> courses = manager.getCourseArray();
-
-                    boolean activitesRemoved = false;
-                    Course targetCourse = null;
-                    for (Course course : courses) {
-                        if (course.getCourseCode().equals(courseCode)) {
-                            targetCourse = course;
-                            break;
-                        }
-                    }
-                    if (targetCourse != null) {
-                        targetCourse.removeActivities();
-                        activitesRemoved = ! activitesRemoved;
-                    }
-
-                    if (activitesRemoved) {
-                        view.displaySuccess("Activities removed successfully.");
-                    } else {
-                        view.displayError("Activities removed failed.");
-                    }
-
-                } else if (selection == 4) {
-                    // View all courses
-                    // Create an instance of CourseManager
-                    CourseManager manager = sharedContext.getCourseManager();
-                
-                    // Call the method on the instance
-                    String courses = manager.viewCourses();
-                
-                    // Display courses
-                    System.out.println(courses);
-                } else if (selection == 5) {
-                    // View all activities
-                     // Create an instance of CourseManager
-                     CourseManager manager = sharedContext.getCourseManager();
-                     String courseCode = view.getInput("Enter course code for your course activities you want to view: ");
-                     ArrayList<Course> courses = manager.getCourseArray();
- 
-                     Course targetCourse = null;
-                     for (Course course : courses) {
-                         if (course.getCourseCode().equals(courseCode)) {
-                             targetCourse = course;
-                             break;
-                         }
-                     }
-                     if (targetCourse != null) {
-                        targetCourse.viewActivities();;
-                    } else {
-                        view.displayError("Course not found.");
-                    }
-
+                switch (selection) {
+                    case -1 -> { return; }
+                    case 0 -> handleAddCourse(manager);
+                    case 1 -> handleRemoveCourse(manager);
+                    case 2 -> handleAddActivity(manager);
+                    case 3 -> handleRemoveActivities(manager);
+                    case 4 -> System.out.println(manager.viewCourses());
+                    case 5 -> handleViewActivities(manager);
+                    default -> view.displayError("Invalid option: " + selection);
                 }
             } catch (NumberFormatException e) {
-                view.displayError("Invalid option: " + selection);
+                view.displayError("Invalid input. Please enter a valid number.");
             }
-
         }
     }
- 
+
+    /**
+     * Adds a new course using user input for all required fields.
+     */
+    private void handleAddCourse(CourseManager manager) {
+        String code = promptNonEmpty("Enter course code: ", "Course code");
+        String name = promptNonEmpty("Enter course name: ", "Course name");
+        String description = promptNonEmpty("Enter course description: ", "Description");
+        boolean needsComputer = view.getYesNoInput("Does it require a computer?");
+        String organiserName = promptNonEmpty("Enter course organiser name: ", "Course organiser name");
+        String organiserEmail = promptNonEmpty("Enter course organiser Email: ", "Course organiser email");
+        String secretaryName = promptNonEmpty("Enter course secretary name: ", "Course secretary name");
+        String secretaryEmail = promptNonEmpty("Enter course secretary Email: ", "Course secretary email");
+        int tutorials = promptPositiveInt("Enter the number of Tutorials required:", "Invalid number. Please enter a valid integer for Tutorials.");
+        int labs = promptPositiveInt("Enter the number of Labs required:", "Invalid number. Please enter a valid integer for Labs.");
+
+        manager.addCourse(code, name, description, needsComputer, organiserName, organiserEmail, secretaryName, secretaryEmail, tutorials, labs);
+        view.displaySuccess("Course added successfully.");
+        email.sendEmail(currentuser.getEmail(), organiserEmail, name, description);
+    }
+
+    /**
+     * Removes a course if it exists.
+     */
+    private void handleRemoveCourse(CourseManager manager) {
+        String code = view.getInput("Enter course code for your course want to remove: ");
+        if (manager.removeCourse(code)) {
+            view.displaySuccess("Course removed successfully.");
+        } else {
+            view.displayError("Course not found.");
+        }
+    }
+
+    /**
+     * Adds a new activity to a course.
+     */
+    private void handleAddActivity(CourseManager manager) {
+        String code = view.getInput("Enter course code for the course you want to add activities: ");
+        Course course = findCourse(manager, code);
+
+        if (course == null) {
+            view.displayError("Course not found.");
+            return;
+        }
+
+        int id = promptActivityId();
+        LocalDate startDate = promptDate("Enter start date [yyyy-MM-dd]: ");
+        LocalTime startTime = promptTime("Enter start time [HH:mm:ss]: ");
+        LocalDate endDate = promptDate("Enter end date [yyyy-MM-dd]: ");
+        LocalTime endTime = promptTime("Enter end time [HH:mm:ss]: ");
+        String location = view.getInput("Enter location: ");
+        DayOfWeek day = promptDay();
+        String type = view.getInput("Enter activity type (LAB, TUTORIAL, or LECTURE): ");
+
+        int capacity = -1;
+        boolean recording = false;
+
+        if ("LECTURE".equalsIgnoreCase(type)) {
+            recording = view.getYesNoInput("Is recording enabled?");
+        } else if ("LAB".equalsIgnoreCase(type) || "TUTORIAL".equalsIgnoreCase(type)) {
+            capacity = Integer.parseInt(view.getInput("Enter capacity: "));
+        } else {
+            view.displayError("Invalid activity type.");
+            return;
+        }
+
+        course.addActivity(id, type.toUpperCase(), startDate, startTime, endDate, endTime, location, day, capacity, recording);
+        view.displaySuccess("Activity added successfully.");
+    }
+
+    /**
+     * Removes all activities from a specified course.
+     */
+    private void handleRemoveActivities(CourseManager manager) {
+        String code = view.getInput("Enter course code for your course activities you want to remove: ");
+        Course course = findCourse(manager, code);
+
+        if (course != null) {
+            course.removeActivities();
+            view.displaySuccess("Activities removed successfully.");
+        } else {
+            view.displayError("Course not found.");
+        }
+    }
+
+    /**
+     * Displays all activities for a specified course.
+     */
+    private void handleViewActivities(CourseManager manager) {
+        String code = view.getInput("Enter course code to view activities: ");
+        Course course = findCourse(manager, code);
+
+        if (course != null) {
+            course.viewActivities();
+        } else {
+            view.displayError("Course not found.");
+        }
+    }
+
+    /**
+     * Finds a course by course code.
+     */
+    private Course findCourse(CourseManager manager, String code) {
+        for (Course c : manager.getCourseArray()) {
+            if (c.getCourseCode().equals(code)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Prompts the user for non-empty input with a customizable error message.
+     *
+     * @param message Prompt message for the user.
+     * @param emptyField to display the empty field that leads to the error.
+     * @return Valid non-empty input.
+     */
+    private String promptNonEmpty(String message, String emptyField) {
+        String input;
+        do {
+            input = view.getInput(message);
+            if (input.trim().isEmpty()) {
+                view.displayError(emptyField + " cannot be empty.");
+            }
+        } while (input.trim().isEmpty());
+        return input;
+    }
+
+
+    /**
+     * Prompts for a positive integer input.
+     */
+    private int promptPositiveInt(String message, String errorMsg) {
+        while (true) {
+            try {
+                int value = Integer.parseInt(view.getInput(message));
+                if (value >= 0) return value;
+                view.displayError("Value must be non-negative.");
+            } catch (NumberFormatException e) {
+                view.displayError(errorMsg);
+            }
+        }
+    }
+
+    /**
+     * Prompts for a valid LocalDate.
+     */
+    private LocalDate promptDate(String message) {
+        while (true) {
+            try {
+                return LocalDate.parse(view.getInput(message));
+            } catch (Exception e) {
+                view.displayError("Invalid date format.");
+            }
+        }
+    }
+
+    /**
+     * Prompts for a valid LocalTime.
+     */
+    private LocalTime promptTime(String message) {
+        while (true) {
+            try {
+                return LocalTime.parse(view.getInput(message));
+            } catch (Exception e) {
+                view.displayError("Invalid time format.");
+            }
+        }
+    }
+
+    /**
+     * Prompts for a valid DayOfWeek.
+     */
+    private DayOfWeek promptDay() {
+        try {
+            return DayOfWeek.valueOf(view.getInput("Enter day (e.g., MONDAY): ").toUpperCase());
+        } catch (Exception e) {
+            view.displayError("Invalid day. Defaulting to MONDAY.");
+            return DayOfWeek.MONDAY;
+        }
+    }
+
+    /**
+     * Prompts for a valid activity ID between 1 and 3.
+     */
+    private int promptActivityId() {
+        while (true) {
+            try {
+                int id = Integer.parseInt(view.getInput("Enter activity id [1(lecture), 2(tutorial), 3(lab)]: "));
+                if (id >= 1 && id <= 3) return id;
+                view.displayError("Invalid activity id.");
+            } catch (NumberFormatException e) {
+                view.displayError("Invalid number.");
+            }
+        }
+    }
+
 }
