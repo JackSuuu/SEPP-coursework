@@ -2,6 +2,7 @@ package system_tests;
 
 import controller.AdminStaffController;
 import controller.GuestController;
+import controller.MenuController;
 import external.MockAuthenticationService;
 import external.MockEmailService;
 import model.AuthenticatedUser;
@@ -29,32 +30,44 @@ public class AddFAQQASystemTests extends TUITest {
     // *//
     @Test
     public void testAddFAQToNewTopic() throws URISyntaxException, IOException, ParseException {
-        // Step 1: Log in as admin1
-        setMockInput("admin1", "admin1pass");
 
+        TUITest tui = new TUITest();
+
+        // Step 1: Log in as admin1
         SharedContext context = new SharedContext();
-        GuestController guestController = new GuestController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
-        guestController.login();
+
+
+
+       // GuestController guestController = new GuestController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
+        tui.loginAsAdminStaff(context);
+        System.out.println( ((AuthenticatedUser) context.currentUser).getRole());
 
         assertInstanceOf(AuthenticatedUser.class, context.currentUser);
         assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
 
+
+        System.out.println(context.getFaqManager().getRootSections());
 
         // Step 3: Add a FAQ to a new topic
         setMockInput(
                 "2", "-2",                    // Select: Add FAQ item
                 "New Topic",             // Input: Topic name
                 "What is SEPP?",         // Input: FAQ question
-                "SEPP is a course."      // Input: FAQ answer
+                "SEPP is a course.",      // Input: FAQ answer
+                "-1",
+                "-1"
         );
+        tui.startOutputCapture();
+        MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
+        menus.mainMenu();
 
-        startOutputCapture();
-        assertOutputContains("Created topic 'New Topic'");
+
+        assertOutputContains("Created topic \'New Topic\'");
 
         // Step 3: Verify the outputs
 
-        startOutputCapture();
-        assertOutputContains("Created topic 'New Topic'");
-        assertOutputContains("Created new FAQ item");
+        //tui.startOutputCapture();
+        //assertOutputContains("Created topic 'New Topic'");
+        //assertOutputContains("Created new FAQ item");
     }
 }

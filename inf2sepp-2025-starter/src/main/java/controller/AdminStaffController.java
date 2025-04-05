@@ -145,7 +145,7 @@ public class AdminStaffController extends StaffController {
                 view.displayWarning("Topic '" + newTopic + "' already exists!");
                 return existing;
             }
-            view.displayInfo("Created topic '" + newTopic + "'");
+            view.displaySuccess("Created topic '" + newTopic + "'");
             return sharedContext.getFaqManager().addTopic(newTopic);
         }
 

@@ -27,6 +27,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>inf2sepp-2024-cw</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <version>9.9.0</version>
