@@ -62,7 +62,7 @@ public class AddFAQQASystemTests extends TUITest {
         menus.mainMenu();
 
 
-        assertOutputContains("Created topic \'New Topic\'");
+        tui.assertOutputContains("Created topic \'New Topic\'");
 
         // Step 3: Verify the outputs
 
