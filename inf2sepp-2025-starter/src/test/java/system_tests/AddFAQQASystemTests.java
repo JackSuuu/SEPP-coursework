@@ -38,15 +38,15 @@ public class AddFAQQASystemTests extends TUITest {
 
 
 
-       // GuestController guestController = new GuestController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
+        //GuestController guestController = new GuestController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
         tui.loginAsAdminStaff(context);
-        System.out.println( ((AuthenticatedUser) context.currentUser).getRole());
+        //System.out.println( ((AuthenticatedUser) context.currentUser).getRole());
 
         assertInstanceOf(AuthenticatedUser.class, context.currentUser);
         assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
 
 
-        System.out.println(context.getFaqManager().getRootSections());
+        //System.out.println(context.getFaqManager().getRootSections());
 
         // Step 3: Add a FAQ to a new topic
         setMockInput(
@@ -57,17 +57,14 @@ public class AddFAQQASystemTests extends TUITest {
                 "-1",
                 "-1"
         );
+
+        // Step 3: Verify the outputs
+
         tui.startOutputCapture();
         MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
         menus.mainMenu();
 
-
         tui.assertOutputContains("Created topic \'New Topic\'");
-
-        // Step 3: Verify the outputs
-
-        //tui.startOutputCapture();
-        //assertOutputContains("Created topic 'New Topic'");
-        //assertOutputContains("Created new FAQ item");
     }
+
 }
