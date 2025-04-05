@@ -15,7 +15,6 @@ public class StudentController extends Controller {
     /**
      * Manages the student's timetable by providing options for various timetable operations.
      */
-    // TODO: implement this
     public void manageTimetable() {
         boolean running = true;
         while (running) {
