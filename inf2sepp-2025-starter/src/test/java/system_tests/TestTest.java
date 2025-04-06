@@ -1,11 +1,12 @@
 package system_tests;
 
-import org.junit.jupiter.api.BeforeEach;
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
+import model.KioskLogger;
+import model.TimeSlot;
 import org.junit.jupiter.api.Test;
 
 public class TestTest extends TUITest {
@@ -79,6 +80,11 @@ public class TestTest extends TUITest {
             System.out.println(s);
         }
 
+    }
+
+    @Test
+    public void doLog(){
+        KioskLogger.getInstance().log(LocalDateTime.now(), "testemail@company", "testUseCase", "0,0,1,help", "SUCCESS");
     }
 
 }

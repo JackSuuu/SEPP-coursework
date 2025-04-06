@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static system_tests.IntegrationTestCommon.*;
 
 
-public class ViewCourseSystemTests {
+public class ViewCoursesSystemTests {
 
 
     @Test

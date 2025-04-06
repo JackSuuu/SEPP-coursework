@@ -31,7 +31,21 @@ public class IntegrationTestCommon
             "MONDAY",
             "LECTURE",
             "y", //recording enabled
+            "-1", //return to main menu
+
+            //add a tutorial
+            "2", "TEST111",
+            "2", //add tutorial
+            "2025-01-01",
+            "07:00:00",
+            "2025-01-01",
+            "08:00:00",
+            "tutvenue",
+            "MONDAY",
+            "TUTORIAL",
+            "40", //capacity
             "-1" //return to main menu
+
     };
 
     public static final String[] logout = {
@@ -92,10 +106,9 @@ public class IntegrationTestCommon
     };
 
 
-    //flatten and concatenate an arbitrary number
+    //flatten and concatenate an arbitrary number of String arrays into one.
     public static String[] concatUserInputs(String[]... all){
-        String[] out = Stream.of(all).flatMap(Stream::of)
-                .toArray(String[]::new);
+        String[] out = Stream.of(all).flatMap(Stream::of).toArray(String[]::new);
         return out;
     }
 

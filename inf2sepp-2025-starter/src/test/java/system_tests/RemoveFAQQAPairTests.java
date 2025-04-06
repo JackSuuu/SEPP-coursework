@@ -59,7 +59,7 @@ public class RemoveFAQQAPairTests extends TUITest {
         MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
         menus.mainMenu();
 
-        tui.assertOutputContains("Created topic \'New Topic\'");
+        tui.assertOutputContains("Created topic 'New Topic'");
         tui.assertOutputContains("Email from admin1@hindeburg.ac.uk to inquiries@hindeburg.ac.nz");
         tui.assertOutputContains("Subject: FAQ topic 'New Topic' updated");
         tui.assertOutputContains("Description: Updated Q&As:");
