@@ -7,6 +7,7 @@ import model.SharedContext;
 import model.Timetable;
 import model.AuthenticatedUser;
 import view.View;
+import model.KioskLogger;
 
 public class StudentController extends Controller {
         public StudentController(SharedContext sharedContext, View view, AuthenticationService auth, EmailService email) {
@@ -40,10 +41,12 @@ public class StudentController extends Controller {
 
             switch (choice) {
                 case 0: // Add Course to timetable
+                    view.displayInfo("=== Add Course to Timetable ===");
                     String courseToAdd = view.getInput("Enter the course code to add into your timetable: ");
-                    Boolean addSuccess = manager.addCourseToStudentTimetable(currentuser.getEmail(), courseToAdd);
+                    Boolean addSuccess = manager.addCourseToStudentTimetable(currentuser.getEmail(), courseToAdd, view);
                     if (addSuccess) {
-                        view.displaySuccess("Course " + courseToAdd + " has been add successfully");
+                        KioskLogger.getInstance().log(currentuser.getEmail(), "addCoursetoStudentTimetable", currentuser.getEmail() + courseToAdd, "SUCCESS");
+                        view.displaySuccess("Course " + courseToAdd + " was successfully added to your timetable");
                     } else {
                         view.displayError("Course " + courseToAdd + " add fail");
                     }
@@ -87,7 +90,7 @@ public class StudentController extends Controller {
                             view.displayError("Invalid status entered. Please enter CHOSEN or UNCHOSEN.");
                         }
                     }
-                    boolean activityChosen = manager.chooseActivityForCourse(currentuser.getEmail(), courseCode, activity_id, status);
+                    boolean activityChosen = manager.chooseActivityForCourse(currentuser.getEmail(), courseCode, activity_id, status, view);
                     if (activityChosen) {
                         view.displaySuccess("Activity set successfully for course " + courseCode);
                     } else {

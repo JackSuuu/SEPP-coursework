@@ -1,0 +1,24 @@
+2025-04-06 19:46:11 [main] model.KioskLogger.log()
+INFO: LOGGER:time: 2025-04-06T19:46:11.628799
+email:admin1@hindeburg.ac.uk
+userID: addCourse
+Code: cs101, Name: cs, Description: jack, Needs Computer: true, Organiser Name: j, Organiser Email: j, Secretary Name: j, Secretary Email: j, Tutorials: 1, Labs: 1
+Status: SUCCESS (Course has been successfully created)
+2025-04-06 19:46:45 [main] model.KioskLogger.log()
+INFO: LOGGER:time: 2025-04-06T19:46:45.018467
+email:admin1@hindeburg.ac.uk
+userID: addCourse
+ID: 1, Type: LECTURE, Start Date: 2000-01-01, Start Time: 11:00, End Date: 2000-01-02, End Time: 12:00, Location: 40gs, Day: MONDAY
+Status: SUCCESS (New course activity added)
+2025-04-06 19:47:23 [main] model.KioskLogger.log()
+INFO: LOGGER:time: 2025-04-06T19:47:23.671584
+email:student1@hindeburg.ac.uk
+userID: addCoursetoStudentTimetable
+student1@hindeburg.ac.ukcs101
+Status: SUCCESS
+2025-04-06 19:47:32 [main] model.KioskLogger.log()
+INFO: LOGGER:time: 2025-04-06T19:47:32.662467
+email:student1@hindeburg.ac.uk
+userID: addCoursetoStudentTimetable
+student1@hindeburg.ac.ukcs101
+Status: FAILURE (Warning: at least one clash with another activity)

@@ -64,11 +64,12 @@ public class Timetable {
      * @return the number of slots added
      */
     // * use Activity as an object instead of string to ensure parameter passing
-    public int addTimeSlots(String courseCode, List<Activity> activities, Statuses status) {
+    public String addTimeSlots(String courseCode, List<Activity> activities, Statuses status) {
         // Check for conflicts using hasSlotsForCourse before adding new time slots.
-        if (hasSlotsForCourse(courseCode, activities)) {
+        int activityId = hasSlotsForCourse(courseCode, activities);
+        if (hasSlotsForCourse(courseCode, activities) != 0) {
             // A conflict exists, so do not add new time slots.
-            return 0;
+            return courseCode + " " + activityId;
         }
         if (timeSlotsArrayList == null) {
             timeSlotsArrayList = new ArrayList<>();
@@ -86,7 +87,7 @@ public class Timetable {
             timeSlotsArrayList.add(slot);
             slotsAdded++;
         }
-        return slotsAdded;
+        return null;
     }
 
     /**
@@ -183,21 +184,21 @@ public class Timetable {
      * @param courseCode the course code
      * @return true if slots exist for the course
      */
-    public boolean hasSlotsForCourse(String courseCode, List<Activity> activities) {
+    public int hasSlotsForCourse(String courseCode, List<Activity> activities) {
         if (timeSlotsArrayList == null) {
-            return false;
+            return 0;
         }
         // For each activity provided, check if adding it would conflict with existing slots for the course.
         for (Activity activity : activities) {
             for (TimeSlot slot : timeSlotsArrayList) {
                 if (slot.getCourseCode().equals(courseCode)) {
                     if (checkConflicts(activity.getStartDate(), activity.getStartTime(), activity.getEndDate(), activity.getEndTime()) == 1) {
-                        return true;
+                        return activity.getId();
                     }
                 }
             }
         }
-        return false;
+        return 0;
     }
 
     /**

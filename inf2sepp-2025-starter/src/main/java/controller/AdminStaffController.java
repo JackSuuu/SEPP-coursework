@@ -111,6 +111,7 @@ public class AdminStaffController extends StaffController {
      * - buildFAQEmailContent
      */
     private void addFAQItem(FAQSection currentSection) {
+        view.displayInfo("=== Add New FAQ Question-Answer Pair===");
         // Decide whether to create a new topic section
         boolean createSection = (currentSection == null) || view.getYesNoInput("Would you like to create a new topic for the FAQ item?");
         if (createSection) {
@@ -118,15 +119,70 @@ public class AdminStaffController extends StaffController {
         }
 
         // Prompt for FAQ content
-        String question = view.getInput("Enter the question for new FAQ item: ");
-        String answer = view.getInput("Enter the answer for new FAQ item: ");
+        String question;
+        while (true) {
+            try {
+            question = view.getInput("Enter the question for new FAQ item: ");
+            if (question.trim().isEmpty()) {
+                throw new Exception("FAQ question cannot be empty.");
+            }
+            break;
+            } catch (Exception e) {
+            KioskLogger.getInstance().log(currentuser.getEmail(), "addFAQItem", "Empty FAQ question provided", "FAILURE (FAQ question cannot be empty)");
+            view.displayError(e.getMessage());
+            }
+        }
+        String answer;
+        while (true) {
+            try {
+            answer = view.getInput("Enter the answer for new FAQ item: ");
+            if (answer.trim().isEmpty()) {
+                throw new Exception("FAQ answer cannot be empty.");
+            }
+            break;
+            } catch (Exception e) {
+            KioskLogger.getInstance().log(currentuser.getEmail(), "addFAQItem", "Empty FAQ answer provided", "FAILURE (FAQ answer cannot be empty)");
+            view.displayError(e.getMessage());
+            }
+        }
+
+        // Get course tag input
+        Boolean useCourseTag = view.getYesNoInput("Would you like to add a course tag?");
+        if (useCourseTag) {
+            String coursesInfo = sharedContext.getCourseManager().viewCourses();
+            view.displayInfo("Full Course Details:\n" + coursesInfo);
+            for (Course course : sharedContext.getCourseManager().getCourseArray()) {
+                StringBuilder activitiesInfo = new StringBuilder("Activities for Course " + course.getCourseCode() + ":\n");
+                for (Activity activity : course.getActivities()) {
+                    activitiesInfo.append(activity.toString()).append("\n");
+                }
+                view.displayInfo(activitiesInfo.toString());
+            }
+
+            if (coursesInfo.trim().isEmpty()) {
+                view.displayInfo("No course available in the system");
+            } else {
+                view.displayInfo("Available courses: " + coursesInfo);
+                view.getInput("Enter course code to add as tag: ");
+                String courseTag = view.getInput("Enter course code to add as tag: ");
+                if (sharedContext.getCourseManager().hasCode(courseTag)) {
+                    sharedContext.getFaqManager().addFAQItem(currentSection, question, answer, courseTag);
+                    view.displayInfo("Course '" + courseTag + "' exists and has been tagged.");
+                } else {
+                    KioskLogger.getInstance().log(currentuser.getEmail(), "addFAQItem", currentSection.getTopic(), "FAILURE (Error: the tag must correspond to a course code)");
+                    view.displayError("Course '" + courseTag + "' not found.");
+                    return;
+                }
+            }
+        }
 
         // Add the item under the current section
         sharedContext.getFaqManager().addFAQItem(currentSection, question, answer, null);
 
         // Notify subscribers
         sendFAQUpdateEmails(currentSection);
-        view.displaySuccess("Created new FAQ item");
+        KioskLogger.getInstance().log(currentuser.getEmail(), "addFAQItem", currentSection.getTopic(), "SUCCESS (A new FAQ item was added)");
+        view.displaySuccess("The new FAQ item was added");
     }
 
     /**
@@ -416,6 +472,7 @@ public class AdminStaffController extends StaffController {
      * Adds a new course using user input for all required fields.
      */
     private void handleAddCourse(CourseManager manager) {
+        view.displayInfo("=== Add Course ===");
         String code = promptNonEmpty("Enter course code: ", "Course code");
         String name = promptNonEmpty("Enter course name: ", "Course name");
         String description = promptNonEmpty("Enter course description: ", "Description");
@@ -427,9 +484,30 @@ public class AdminStaffController extends StaffController {
         int tutorials = promptPositiveInt("Enter the number of Tutorials required:", "Invalid number. Please enter a valid integer for Tutorials.");
         int labs = promptPositiveInt("Enter the number of Labs required:", "Invalid number. Please enter a valid integer for Labs.");
 
-        manager.addCourse(code, name, description, needsComputer, organiserName, organiserEmail, secretaryName, secretaryEmail, tutorials, labs);
-        view.displaySuccess("Course added successfully.");
+        String courseInfo = "Code: " + code +
+            ", Name: " + name +
+            ", Description: " + description +
+            ", Needs Computer: " + needsComputer +
+            ", Organiser Name: " + organiserName +
+            ", Organiser Email: " + organiserEmail +
+            ", Secretary Name: " + secretaryName +
+            ", Secretary Email: " + secretaryEmail +
+            ", Tutorials: " + tutorials +
+            ", Labs: " + labs;
+
         email.sendEmail(currentuser.getEmail(), organiserEmail, name, description);
+        
+        if(code.trim().isEmpty() || name.trim().isEmpty() || description.trim().isEmpty() ||
+           organiserName.trim().isEmpty() || organiserEmail.trim().isEmpty() ||
+           secretaryName.trim().isEmpty() || secretaryEmail.trim().isEmpty()) {
+            KioskLogger.getInstance().log(currentuser.getEmail(), "addCourse", courseInfo, "FAILURE (Error: Required course info not provided)");
+            view.displayError("Required course in not provided");
+        } else {
+            manager.addCourse(code, name, description, needsComputer, organiserName, organiserEmail, secretaryName, secretaryEmail, tutorials, labs, view);
+            KioskLogger.getInstance().log(currentuser.getEmail(), "addCourse", courseInfo, "SUCCESS (Course has been successfully created)");
+            view.displaySuccess("Course added successfully.");
+        }
+
     }
 
     /**
@@ -448,6 +526,7 @@ public class AdminStaffController extends StaffController {
      * Adds a new activity to a course.
      */
     private void handleAddActivity(CourseManager manager) {
+        view.displayInfo("=== Add Course - Activities===");
         String code = view.getInput("Enter course code for the course you want to add activities: ");
         Course course = findCourse(manager, code);
 
@@ -456,7 +535,7 @@ public class AdminStaffController extends StaffController {
             return;
         }
 
-        int id = promptActivityId();
+        view.displayInfo("Enter all activity info about the course:");
         LocalDate startDate = promptDate("Enter start date [yyyy-MM-dd]: ");
         LocalTime startTime = promptTime("Enter start time [HH:mm:ss]: ");
         LocalDate endDate = promptDate("Enter end date [yyyy-MM-dd]: ");
@@ -464,20 +543,39 @@ public class AdminStaffController extends StaffController {
         String location = view.getInput("Enter location: ");
         DayOfWeek day = promptDay();
         String type = view.getInput("Enter activity type (LAB, TUTORIAL, or LECTURE): ");
+        int id = 0;
 
         int capacity = -1;
         boolean recording = false;
 
+        // automatically generated activity id based on different type
         if ("LECTURE".equalsIgnoreCase(type)) {
             recording = view.getYesNoInput("Is recording enabled?");
-        } else if ("LAB".equalsIgnoreCase(type) || "TUTORIAL".equalsIgnoreCase(type)) {
+            id = 1;
+        } else if ("LAB".equalsIgnoreCase(type)) {
             capacity = Integer.parseInt(view.getInput("Enter capacity: "));
-        } else {
+            id = 2;
+        } else if ("TUTORIAL".equalsIgnoreCase(type)) {
+            capacity = Integer.parseInt(view.getInput("Enter capacity: "));
+            id = 3;
+        }
+        
+        else {
             view.displayError("Invalid activity type.");
             return;
         }
 
+        String activityInfo = "ID: " + id +
+            ", Type: " + type +
+            ", Start Date: " + startDate +
+            ", Start Time: " + startTime +
+            ", End Date: " + endDate +
+            ", End Time: " + endTime +
+            ", Location: " + location +
+            ", Day: " + day;
+
         course.addActivity(id, type.toUpperCase(), startDate, startTime, endDate, endTime, location, day, capacity, recording);
+        KioskLogger.getInstance().log(currentuser.getEmail(), "addCourse", activityInfo, "SUCCESS (New course activity added)");
         view.displaySuccess("Activity added successfully.");
     }
 
@@ -591,21 +689,6 @@ public class AdminStaffController extends StaffController {
         } catch (Exception e) {
             view.displayError("Invalid day. Defaulting to MONDAY.");
             return DayOfWeek.MONDAY;
-        }
-    }
-
-    /**
-     * Prompts for a valid activity ID between 1 and 3.
-     */
-    private int promptActivityId() {
-        while (true) {
-            try {
-                int id = Integer.parseInt(view.getInput("Enter activity id [1(lecture), 2(tutorial), 3(lab)]: "));
-                if (id >= 1 && id <= 3) return id;
-                view.displayError("Invalid activity id.");
-            } catch (NumberFormatException e) {
-                view.displayError("Invalid number.");
-            }
         }
     }
 

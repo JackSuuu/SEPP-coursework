@@ -2,6 +2,8 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import model.*;
+import view.View;
 
 public class CourseManager {
     // private Timetable Timetable = new Timetable();
@@ -20,7 +22,7 @@ public class CourseManager {
     public void addCourse(String courseCode, String name, String description, boolean requiresComputers,
     String CourseOrganiserName, String CourseOrganiserEmail,
     String CourseSecretaryName, String CourseSecretaryEmail,
-    int requiredTutorials, int requiredLabs) {
+    int requiredTutorials, int requiredLabs, View view) {
         Course course = new Course(courseCode, name, description, requiresComputers,
         CourseOrganiserName, CourseOrganiserEmail,
         CourseSecretaryName, CourseSecretaryEmail,
@@ -34,10 +36,56 @@ public class CourseManager {
         course.setCourseSecretaryEmail(CourseSecretaryEmail);
         course.setRequiredTutorials(requiredTutorials);
         course.setRequiredLabs(requiredLabs);
-        
-        // add the course into the array
-        getCourseArray().add(course);
-        
+
+        String courseInfo = "Code: " + courseCode +
+        ", Name: " + name +
+        ", Description: " + description +
+        ", Needs Computer: " + requiresComputers +
+        ", Organiser Name: " + CourseOrganiserName +
+        ", Organiser Email: " + CourseOrganiserEmail +
+        ", Secretary Name: " + CourseOrganiserName +
+        ", Secretary Email: " + CourseSecretaryEmail +
+        ", Tutorials: " + requiredTutorials +
+        ", Labs: " + requiredLabs;
+
+        if (!courseCodeValid(courseCode)) {
+            KioskLogger.getInstance().log(CourseOrganiserEmail, "addCourse", courseInfo, "FAILURE (Error: Provided courseCode is invalid)");
+            view.displayError("Provided courseCode is invalid");
+            // the process halt, user should add course again
+            return;
+        } 
+
+        if (hasCode(courseCode)) {
+            KioskLogger.getInstance().log(CourseOrganiserEmail, "addCourse", courseInfo, "FAILURE (Error: Course with that code already exists)");
+            view.displayError("Course with that code already exists");
+            return;
+        } else {
+            getCourseArray().add(course);
+        }        
+    }
+
+    public boolean courseCodeValid(String courseCode) {
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
+    // align with sequence diagram
+    public boolean hasCode(String courseCode) {
+        // Detect if the course code is valid
+        boolean duplicateFound = false;
+        for (Course existingCourse : getCourseArray()) {
+            if (existingCourse.getCourseCode().equals(courseCode)) {
+            duplicateFound = true;
+            break;
+            }
+        }
+        if (duplicateFound) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // * modify this method to boolean, so we can testify if the course been add successfully
@@ -58,7 +106,13 @@ public class CourseManager {
         }
     }
 
-    public boolean addCourseToStudentTimetable(String studentEmail, String courseCode) {
+    public boolean addCourseToStudentTimetable(String studentEmail, String courseCode, View view) {
+        if (!hasCode(courseCode)) {
+            view.displayError("Incorrect course code");
+            KioskLogger.getInstance().log(studentEmail, "addCoursetoStudentTimetable", studentEmail + courseCode, "FAILURE (Error: Incorrect course code provided)");
+            return false;
+        }
+
         // Iterate through student time to find the target course
         Course targetCourse = null;
         for (Course c : getCourseArray()) {
@@ -81,6 +135,7 @@ public class CourseManager {
             }
         }
         
+        // Equivalent code for hasEmail
         // If no timetable exists, create a new one with the studentEmail
         if (studentTimetable == null) {
             studentTimetable = new Timetable(studentEmail);
@@ -124,8 +179,7 @@ public class CourseManager {
         return true;
     }
 
-    // ! status not working
-    public boolean chooseActivityForCourse(String studentEmail, String courseCode, int activityId, String status) {
+    public boolean chooseActivityForCourse(String studentEmail, String courseCode, int activityId, String status, View view) {
         // Convert status string to ENUM
         TimeSlot.Statuses statusEnum;
         try {
@@ -162,12 +216,14 @@ public class CourseManager {
         }
         
         // Use checkChosenTutorials or checkChosenLabs based on the activityId before selecting the activity.
-        if (activityId == 2 && checkChosenTutorials(courseCode, studentTimetable)) {
-            System.out.println("Tutorial for course " + courseCode + " already chosen for student " + studentEmail);
+        if (activityId == 2 && !checkChosenTutorials(courseCode, studentTimetable)) {
+            KioskLogger.getInstance().log(studentEmail, "addCoursetoStudentTimetable", studentEmail+courseCode, "FAILURE"+ "(Warning: number of required tutorials " + targetCourse.getRequiredTutorials() + "not yet chosen)");
+            view.displayWarning("You have to choose " + targetCourse.getRequiredTutorials() + "tutorials for this course");
             return false;
         }
-        if (activityId == 3 && checkChosenLabs(courseCode, studentTimetable)) {
-            System.out.println("Lab for course " + courseCode + " already chosen for student " + studentEmail);
+        if (activityId == 3 && !checkChosenLabs(courseCode, studentTimetable)) {
+            KioskLogger.getInstance().log(studentEmail, "addCoursetoStudentTimetable", studentEmail+courseCode, "FAILURE"+ "(Warning: number of required labs " + targetCourse.getRequiredLabs() + "not yet chosen)");
+            view.displayWarning("You have to choose " + targetCourse.getRequiredLabs() + "labs for this course");
             return false;
         }
         
@@ -186,9 +242,14 @@ public class CourseManager {
         } else {
             // Use addTimeSlots to add the activity into the student's timetable.
             // The method expects a list, so we wrap the selected activity.
-            int slotsAdded = studentTimetable.addTimeSlots(courseCode, java.util.Collections.singletonList(selectedActivity), statusEnum);
+            String slotsAdded = studentTimetable.addTimeSlots(courseCode, java.util.Collections.singletonList(selectedActivity), statusEnum);
             // Successful addition if at least one slot was added.
-            return slotsAdded > 0;
+            if (slotsAdded != null) {
+                return true;
+            } else {
+                KioskLogger.getInstance().log(studentEmail, "addCoursetoStudentTimetable", studentEmail + courseCode, "FAILURE (Warning: at least one clash with another activity)");
+                return false;
+            }
         }
     }
 
@@ -222,31 +283,51 @@ public class CourseManager {
     }
 
     private boolean checkChosenTutorials(String courseCode, Timetable timetable) {
-        // Check if any tutorial (activityId 2) in the course has already been chosen.
+        int chosenTutorials = 0;
         ArrayList<TimeSlot> timeSlots = timetable.getTimeSlotsArray();
-
         for (TimeSlot slot : timeSlots) {
-            if (slot.getCourseCode().equals(courseCode)) {
-                    if (slot.getActivityId() == 2 && slot.isChosen()) {
-                        return true;
-                }
+            if (slot.getCourseCode().equals(courseCode) && slot.getActivityId() == 2 && slot.isChosen()) {
+                chosenTutorials++;
             }
         }
-        return false;
+        // Retrieve the Course to check required number of tutorials
+        Course targetCourse = null;
+        for (Course course : getCourseArray()) {
+            if (course.getCourseCode().equals(courseCode)) {
+                targetCourse = course;
+                break;
+            }
+        }
+        if (targetCourse == null) {
+            // Course not found; assume tutorials are not enough
+            return false;
+        }
+        // Return true if the number of chosen tutorials is greater or equal to required
+        return chosenTutorials >= targetCourse.getRequiredTutorials();
     }
-
+    
     private boolean checkChosenLabs(String courseCode, Timetable timetable) {
-        // Check if any lab (activityId 3) in the course has already been chosen.
+        int chosenLabs = 0;
         ArrayList<TimeSlot> timeSlots = timetable.getTimeSlotsArray();
 
         for (TimeSlot slot : timeSlots) {
-            if (slot.getCourseCode().equals(courseCode)) {
-                    if (slot.getActivityId() == 3 && slot.isChosen()) {
-                        return true;
-                }
+            if (slot.getCourseCode().equals(courseCode) && slot.getActivityId() == 3 && slot.isChosen()) {
+                chosenLabs++;
             }
         }
-        return false;
+        // Retrieve the Course to check required number of labs
+        Course targetCourse = null;
+        for (Course course : getCourseArray()) {
+            if (course.getCourseCode().equals(courseCode)) {
+                targetCourse = course;
+                break;
+            }
+        }
+        if (targetCourse == null) {
+            return false;
+        }
+        // Return true if the number of chosen labs is greater or equal to required labs
+        return chosenLabs >= targetCourse.getRequiredLabs();
     }
 
     private Timetable getTimetable(String studentEmail) {

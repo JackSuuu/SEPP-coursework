@@ -15,11 +15,13 @@ public class KioskLogger {
         }
         return logger;
     }
+    
     private KioskLogger() {
     }
-    public void log(LocalDateTime time, String userID, String actionName, String inputs, String status){
-        Logger.info("time: " + time + "\nuserID: " + userID + "\n" +actionName + "\ninputs: " + inputs + "\nStatus:" + status);
+    
+    public void log(String email, String userID, String actionName, String status){
+        LocalDateTime currentTime = LocalDateTime.now();
+        Logger.info("LOGGER:" + "time: " + currentTime + "\nemail:" + email + "\nuserID: " + userID + "\n" 
+            + actionName + "\nStatus: " + status);
     }
-
-
 }
