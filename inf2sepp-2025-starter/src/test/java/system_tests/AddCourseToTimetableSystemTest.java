@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static system_tests.IntegrationTestCommon.*;
 
 public class AddCourseToTimetableSystemTest extends TUITest
 {
@@ -36,32 +37,9 @@ public class AddCourseToTimetableSystemTest extends TUITest
 
         // Step 2: Set inputs to add a new course
         tui.setMockInput(
-                "3",
-                "0",
-                "TEST111",
-                "Test Course",
-                "Integration test course",
-                "y",
-                "Tester",
-                "test@testsite",
-                "testsec",
-                "testsec@testsite",
-                "12",
-                "4",
-                "2", //add activity
-                "TEST111",
-                "1", //add lecture
-                "2025-01-01",
-                "06:00:00",
-                "2025-01-01",
-                "07:00:00",
-                "Testbuilding",
-                "MONDAY",
-                "TUTORIAL",     //discrepancy
-                "30",            //capacity
-                "4",            //view courses
-
-                "-1", "-1" //exit
+                concatStrings(addTestCourse1,
+                        new String[]{"4"} //view all courses
+                        ,exit)
         );
 
         // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
