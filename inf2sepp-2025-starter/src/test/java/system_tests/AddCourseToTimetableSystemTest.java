@@ -7,6 +7,7 @@ import model.AuthenticatedUser;
 import model.SharedContext;
 import org.json.simple.parser.ParseException;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
 import view.TextUserInterface;
 
@@ -21,8 +22,8 @@ public class AddCourseToTimetableSystemTest extends TUITest
 
     TUITest testTUI;
 
-    @BeforeAll
-    public static void setup() throws URISyntaxException, IOException, ParseException {
+    @Test
+    public void setup() throws URISyntaxException, IOException, ParseException {
         //login as admin, add courses.
         TUITest tui = new TUITest(); //provided helper test code.
 
@@ -55,8 +56,12 @@ public class AddCourseToTimetableSystemTest extends TUITest
                 "2025-01-01",
                 "07:00:00",
                 "Testbuilding",
+                "MONDAY",
                 "TUTORIAL",     //discrepancy
-                "30"            //capacity
+                "30",            //capacity
+                "4",            //view courses
+
+                "-1", "-1" //exit
         );
 
         // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
@@ -64,7 +69,7 @@ public class AddCourseToTimetableSystemTest extends TUITest
         MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
         menus.mainMenu();
 
-        tui.assertOutputContains("Created topic 'New Topic'");
+        tui.assertOutputContains("TEST111");
 
 
     }
