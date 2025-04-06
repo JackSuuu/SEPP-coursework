@@ -22,7 +22,7 @@ public class AddCourseToTimetableSystemTest extends TUITest
     TUITest testTUI;
 
     @Test
-    public void addCourseandViewAsStudent() throws URISyntaxException, IOException, ParseException {
+    public void addCourseToTTAndViewAsStudent() throws URISyntaxException, IOException, ParseException {
         //login as admin, add courses.
         TUITest tui = new TUITest(); //provided helper test code.
 
@@ -50,6 +50,8 @@ public class AddCourseToTimetableSystemTest extends TUITest
 
         tui.assertOutputContains("startTime = 06:00");
         tui.assertOutputContains("TEST111");
+
+
 
 
     }

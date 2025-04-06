@@ -1,12 +1,12 @@
 package system_tests;
 
-import controller.GuestController;
+import controller.MenuController;
 import external.MockAuthenticationService;
 import external.MockEmailService;
 import model.AuthenticatedUser;
 import model.SharedContext;
 import org.json.simple.parser.ParseException;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.Test;
 import view.TextUserInterface;
 
 import java.io.IOException;
@@ -14,25 +14,42 @@ import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static system_tests.IntegrationTestCommon.*;
 
 
 public class ViewCourseSystemTests {
 
-    private SharedContext context;
-    @BeforeEach
-    public void setUp() throws URISyntaxException, IOException, ParseException {
-        context = new SharedContext();
 
-        // Simulates: username, password, and selection of menu option 3 (Manage Courses)
-        //setMockInput("admin1", "admin1pass", "3");
+    @Test
+    public void addCourseToTTAndViewAsAdmin() throws URISyntaxException, IOException, ParseException {
+        //login as admin, add courses.
+        TUITest tui = new TUITest(); //provided helper test code.
 
-        GuestController guestController = new GuestController(context, new TextUserInterface(),
-                new MockAuthenticationService(), new MockEmailService());
-        guestController.login();
+        // Step 1: Log in as admin1
+        SharedContext context = new SharedContext();
+        tui.loginAsAdminStaff(context);
 
-        // Ensure the user is authenticated and is of AdminStaff role
         assertInstanceOf(AuthenticatedUser.class, context.currentUser);
         assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
+
+        // Step 2: Set inputs to add a new course
+        tui.setMockInput(
+                concatUserInputs(addTestCourse1,
+                        addTestCourse2,
+                        new String[]{"3","4"}, //view all courses,
+                        exit)
+        );
+
+        // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
+        tui.startOutputCapture();
+        MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
+        menus.mainMenu();
+
+        //tui.assertOutputContains("startTime = 06:00");
+        tui.assertOutputContains("TEST111");
+        tui.assertOutputContains("TEST222");
+
+
     }
 
 

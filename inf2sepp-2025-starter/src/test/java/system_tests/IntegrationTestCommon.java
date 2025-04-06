@@ -61,6 +61,37 @@ public class IntegrationTestCommon
             "-1", "-1" //exit
     };
 
+    public static final String[] addTestCourse2 = {
+            //add a test course
+            "3",
+            "0",
+            "TEST222",
+            "Test Course 2",
+            "Integration test course 2",
+            "n",    //requires computer
+            "OtherTester",
+            "test2@testsite",
+            "othertestsec",
+            "testsec2@testsite",
+            "120", //num tuts
+            "7", //num labs
+
+            //add a lecture
+            "2", //add activity
+            "TEST222",
+            "1", //lecture
+            "2025-01-01",
+            "06:00:00",
+            "2025-01-01",
+            "07:00:00",
+            "Testvenue",
+            "MONDAY",
+            "LECTURE",
+            "n", //recording enabled
+            "-1" //return to main menu
+    };
+
+
     //flatten and concatenate an arbitrary number
     public static String[] concatUserInputs(String[]... all){
         String[] out = Stream.of(all).flatMap(Stream::of)
