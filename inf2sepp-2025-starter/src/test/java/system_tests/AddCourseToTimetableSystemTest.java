@@ -22,7 +22,7 @@ public class AddCourseToTimetableSystemTest extends TUITest
     TUITest testTUI;
 
     @Test
-    public void setup() throws URISyntaxException, IOException, ParseException {
+    public void addCourseandViewAsStudent() throws URISyntaxException, IOException, ParseException {
         //login as admin, add courses.
         TUITest tui = new TUITest(); //provided helper test code.
 
@@ -36,8 +36,11 @@ public class AddCourseToTimetableSystemTest extends TUITest
         // Step 2: Set inputs to add a new course
         tui.setMockInput(
                 concatUserInputs(addTestCourse1,
-                        new String[]{"4"} //view all courses
-                        ,exit)
+                        new String[]{"4"}, //view all courses
+                        logout,
+                        loginAsStudent,
+                        addTestCourseToTimetable,
+                        exit)
         );
 
         // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
@@ -45,6 +48,7 @@ public class AddCourseToTimetableSystemTest extends TUITest
         MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
         menus.mainMenu();
 
+        tui.assertOutputContains("startTime = 06:00");
         tui.assertOutputContains("TEST111");
 
 
