@@ -1,14 +1,13 @@
 package system_tests;
 
-import controller.AdminStaffController;
-import controller.GuestController;
 import controller.MenuController;
 import external.MockAuthenticationService;
 import external.MockEmailService;
 import model.AuthenticatedUser;
 import model.SharedContext;
 import org.json.simple.parser.ParseException;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeAll;
 import view.TextUserInterface;
 
 import java.io.IOException;
@@ -16,21 +15,15 @@ import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
-public class AddFAQQASystemTests extends TUITest {
+public class AddCourseToTimetableSystemTest extends TUITest
+{
 
-    /*
-     Add FAQ Q-A System Tests
-    */
+    TUITest testTUI;
 
-    //*
-    // Test: Add FAQ to New Topic (as Admin Staff)
-    // *//
-    @Test
-    public void testAddFAQToNewTopic() throws URISyntaxException, IOException, ParseException { //relates to R14b
-
+    @BeforeAll
+    public static void setup() throws URISyntaxException, IOException, ParseException {
+        //login as admin, add courses.
         TUITest tui = new TUITest(); //provided helper test code.
 
         // Step 1: Log in as admin1
@@ -40,15 +33,30 @@ public class AddFAQQASystemTests extends TUITest {
         assertInstanceOf(AuthenticatedUser.class, context.currentUser);
         assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
 
-
-        // Step 2: Set inputs to add a FAQ to a new topic
-        setMockInput(
-                "2", "-2",                    // Select: Add FAQ item
-                "New Topic",             // Input: Topic name
-                "What is SEPP?",         // Input: FAQ question
-                "SEPP is a course.",      // Input: FAQ answer
-                "-1",                       //return to main menu
-                "-1"                        //exit
+        // Step 2: Set inputs to add a new course
+        tui.setMockInput(
+                "3",
+                "0",
+                "TEST111",
+                "Test Course",
+                "Integration test course",
+                "y",
+                "Tester",
+                "test@testsite",
+                "testsec",
+                "testsec@testsite",
+                "12",
+                "4",
+                "2", //add activity
+                "TEST111",
+                "1", //add lecture
+                "2025-01-01",
+                "06:00:00",
+                "2025-01-01",
+                "07:00:00",
+                "Testbuilding",
+                "TUTORIAL",     //discrepancy
+                "30"            //capacity
         );
 
         // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
@@ -60,7 +68,5 @@ public class AddFAQQASystemTests extends TUITest {
 
 
     }
-
-
 
 }
