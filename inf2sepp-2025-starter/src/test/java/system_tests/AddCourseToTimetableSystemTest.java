@@ -6,9 +6,7 @@ import external.MockEmailService;
 import model.AuthenticatedUser;
 import model.SharedContext;
 import org.json.simple.parser.ParseException;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeAll;
 import view.TextUserInterface;
 
 import java.io.IOException;
@@ -37,7 +35,7 @@ public class AddCourseToTimetableSystemTest extends TUITest
 
         // Step 2: Set inputs to add a new course
         tui.setMockInput(
-                concatStrings(addTestCourse1,
+                concatUserInputs(addTestCourse1,
                         new String[]{"4"} //view all courses
                         ,exit)
         );

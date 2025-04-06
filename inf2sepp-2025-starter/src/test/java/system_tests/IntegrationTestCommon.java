@@ -24,7 +24,7 @@ public class IntegrationTestCommon
             "06:00:00",
             "2025-01-01",
             "07:00:00",
-            "Testbuilding",
+            "Testvenue",
             "MONDAY",
             "LECTURE",
             "30",            //capacity
@@ -34,7 +34,8 @@ public class IntegrationTestCommon
             "-1", "-1" //exit
     };
 
-    public static String[] concatStrings(String[]... all){
+    //flatten and concatenate an arbitrary number
+    public static String[] concatUserInputs(String[]... all){
         String[] out = Stream.of(all).flatMap(Stream::of)
                 .toArray(String[]::new);
         return out;
