@@ -87,7 +87,7 @@ public class Timetable {
             timeSlotsArrayList.add(slot);
             slotsAdded++;
         }
-        return null;
+        return String.valueOf(slotsAdded);
     }
 
     /**

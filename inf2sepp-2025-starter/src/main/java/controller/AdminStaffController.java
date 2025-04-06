@@ -476,13 +476,25 @@ public class AdminStaffController extends StaffController {
         String code = promptNonEmpty("Enter course code: ", "Course code");
         String name = promptNonEmpty("Enter course name: ", "Course name");
         String description = promptNonEmpty("Enter course description: ", "Description");
-        boolean needsComputer = view.getYesNoInput("Does it require a computer?");
+        boolean needsComputer;
+        while (true) {
+            String input = view.getInput("Does it require a computer? (Y/N): ");
+            if (input.equalsIgnoreCase("Y")) {
+            needsComputer = true;
+            break;
+            } else if (input.equalsIgnoreCase("N")) {
+            needsComputer = false;
+            break;
+            } else {
+            view.displayError("Invalid input. Please enter Y or N.");
+            }
+        }
         String organiserName = promptNonEmpty("Enter course organiser name: ", "Course organiser name");
         String organiserEmail = promptNonEmpty("Enter course organiser Email: ", "Course organiser email");
         String secretaryName = promptNonEmpty("Enter course secretary name: ", "Course secretary name");
         String secretaryEmail = promptNonEmpty("Enter course secretary Email: ", "Course secretary email");
-        int tutorials = promptPositiveInt("Enter the number of Tutorials required:", "Invalid number. Please enter a valid integer for Tutorials.");
-        int labs = promptPositiveInt("Enter the number of Labs required:", "Invalid number. Please enter a valid integer for Labs.");
+        int tutorials = promptPositiveInt("Enter the number of Tutorials required: ", "Invalid number. Please enter a valid integer for Tutorials.");
+        int labs = promptPositiveInt("Enter the number of Labs required: ", "Invalid number. Please enter a valid integer for Labs.");
 
         String courseInfo = "Code: " + code +
             ", Name: " + name +
