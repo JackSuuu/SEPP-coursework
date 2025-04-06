@@ -18,7 +18,7 @@ public class KioskLogger {
     private KioskLogger() {
     }
     public void log(LocalDateTime time, String userID, String actionName, String inputs, String status){
-        Logger.info("time: " + time + "\nuserID: " + userID + "\n" +actionName + "\ninputs: ");
+        Logger.info("time: " + time + "\nuserID: " + userID + "\n" +actionName + "\ninputs: " + inputs + "\nStatus:" + status);
     }
 
 
