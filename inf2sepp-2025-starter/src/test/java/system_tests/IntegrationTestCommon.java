@@ -105,6 +105,15 @@ public class IntegrationTestCommon
             "-1" //return to main menu
     };
 
+    public static final String[] addFAQItem = {
+            "2", "-2",                    // Select: Add FAQ item
+            "New Topic",             // Input: Topic name
+            "What is SEPP?",         // Input: FAQ question
+            "SEPP is a course.",      // Input: FAQ answer
+            "n",
+            "-1"                       //return to main menu
+    };
+
 
     //flatten and concatenate an arbitrary number of String arrays into one.
     public static String[] concatUserInputs(String[]... all){
