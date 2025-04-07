@@ -15,11 +15,10 @@ import java.net.URISyntaxException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static system_tests.IntegrationTestCommon.*;
+import static system_tests.IntegrationTestCommon.exit;
 
-
-public class ViewCoursesSystemTests {
-
-
+public class ChooseTutorialOrLabSystemTests extends TUITest
+{
     @Test
     public void mainSuccessScenario() throws URISyntaxException, IOException, ParseException {
         //login as admin, add courses.
@@ -36,7 +35,10 @@ public class ViewCoursesSystemTests {
         tui.setMockInput(
                 concatUserInputs(addTestCourse1,
                         addTestCourse2,
-                        new String[]{"3","4"}, //view all courses,
+                        new String[]{"4"}, //view all courses
+                        logout,
+                        loginAsStudent,
+                        addTestCourseToTimetable,
                         exit)
         );
 
@@ -47,11 +49,9 @@ public class ViewCoursesSystemTests {
 
         //tui.assertOutputContains("startTime = 06:00");
         tui.assertOutputContains("TEST111");
-        tui.assertOutputContains("TEST222");
+        tui.assertOutputContains("activityTypeLECTURE");
+        tui.assertOutputContains("CHOSEN");
 
 
     }
-
-
-
 }

@@ -84,7 +84,7 @@ public class TestTest extends TUITest {
 
     @Test
     public void doLog(){
-        KioskLogger.getInstance().log(LocalDateTime.now(), "testemail@company", "testUseCase", "0,0,1,help", "SUCCESS");
+        KioskLogger.getInstance().log("testemail@company", "testUseCase", "0,0,1,help", "SUCCESS");
     }
 
 }
