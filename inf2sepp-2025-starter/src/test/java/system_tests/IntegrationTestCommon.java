@@ -111,7 +111,7 @@ public class IntegrationTestCommon
             "What is SEPP?",         // Input: FAQ question
             "SEPP is a course.",      // Input: FAQ answer
             "n",
-            "-1"                       //return to main menu
+            "-1",                       //return to main menu
     };
 
 
