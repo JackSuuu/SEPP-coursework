@@ -24,14 +24,11 @@ class ConsultFAQSystemTests extends TUITest{
 
         // Step 1: Log in as admin1
         SharedContext context = new SharedContext();
-        loginAsAdminStaff(context);
-
-        assertInstanceOf(AuthenticatedUser.class, context.currentUser);
-        assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
 
         // Step 2: Set inputs to add a new course
         setMockInput(
-                concatUserInputs(addFAQItem,
+                concatUserInputs(loginAsAdmin,
+                        addFAQItem,
                         new String[]{"0"}, //view all courses
                         logout,
                         exit)
