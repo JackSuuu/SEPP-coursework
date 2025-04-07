@@ -81,7 +81,7 @@ public class TimeSlot {
     @Override
     public String toString() {
         return "\nTimeSlot {" +
-               "\n activityType" + printEvent() +
+               "\n activityType = " + printEvent() +
                "\n, activityId = " + activityId +
                "\n, day = " + day +
                "\n, startTime = " + startTime +

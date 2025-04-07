@@ -114,7 +114,7 @@ public class TextUserInterface implements View {
     @Override
     public void displayTimetable(Timetable timetable) {
         if (timetable == null || timetable.equals("null")) {
-            System.out.println("Student timetable not create yet, adding a course activity to create your timetable\n");;
+            System.out.println("Student timetable not yet created. You must add a course activity to create your timetable.\n");;
         } else {
             System.out.println("# Student Timetable: ");
             System.out.println(timetable);
