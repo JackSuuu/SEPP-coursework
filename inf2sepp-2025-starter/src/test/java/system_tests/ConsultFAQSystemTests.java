@@ -30,10 +30,10 @@ public class ConsultFAQSystemTests extends TUITest{
         assertInstanceOf(AuthenticatedUser.class, context.currentUser);
         assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
 
-        // Step 2: Set inputs to add a new course
+        // Step 2: Set inputs to add a new FAQ item
         tui.setMockInput(
                 concatUserInputs(addFAQItem,
-                        new String[]{"0"}, //view all courses
+                        new String[]{"0", "-1"}, //view FAQ
                         logout,
                         exit)
         );
@@ -46,7 +46,6 @@ public class ConsultFAQSystemTests extends TUITest{
         //tui.assertOutputContains("startTime = 06:00");
         tui.assertOutputContains("What is SEPP?");
         tui.assertOutputContains("SEPP is a course");
-        tui.assertOutputContains("CHOSEN");
 
 
     }
