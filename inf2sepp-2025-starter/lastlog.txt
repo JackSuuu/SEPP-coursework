@@ -1,18 +1,12 @@
-2025-04-07 06:00:54 [main] model.KioskLogger.log()
-INFO: LOGGER:time: 2025-04-07T06:00:54.130712
+2025-04-07 11:42:24 [main] model.KioskLogger.log()
+INFO: LOGGER:time: 2025-04-07T11:42:24.512647800
 email:admin1@hindeburg.ac.uk
-userID: addCourse
-Code: TEST111, Name: Test Course, Description: Integration test course, Needs Computer: true, Organiser Name: Tester, Organiser Email: test@testsite, Secretary Name: testsec, Secretary Email: testsec@testsite, Tutorials: 12, Labs: 4
-Status: SUCCESS (Course has been successfully created)
-2025-04-07 06:00:54 [main] model.KioskLogger.log()
-INFO: LOGGER:time: 2025-04-07T06:00:54.171206
+userID: addFAQItem
+New Topic
+Status: SUCCESS (A new FAQ item was added)
+2025-04-07 11:42:24 [main] model.KioskLogger.log()
+INFO: LOGGER:time: 2025-04-07T11:42:24.564657300
 email:admin1@hindeburg.ac.uk
-userID: addCourse
-ID: 1, Type: LECTURE, Start Date: 2025-01-01, Start Time: 06:00, End Date: 2025-01-01, End Time: 07:00, Location: Testvenue, Day: MONDAY
-Status: SUCCESS (New course activity added)
-2025-04-07 06:00:54 [main] model.KioskLogger.log()
-INFO: LOGGER:time: 2025-04-07T06:00:54.175645200
-email:student1@hindeburg.ac.uk
-userID: addCoursetoStudentTimetable
-student1@hindeburg.ac.ukTEST111
-Status: SUCCESS
+userID: addFAQItem
+New Topic
+Status: SUCCESS (A new FAQ item was added)

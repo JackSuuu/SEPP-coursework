@@ -16,34 +16,70 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static system_tests.IntegrationTestCommon.*;
 
-class ConsultFAQSystemTests extends TUITest{
+class ConsultFAQSystemTests extends TUITest {
 
     @Test
     void mainSuccessScenario() throws URISyntaxException, IOException, ParseException {
-        //login as admin, add courses.
-
-        // Step 1: Log in as admin1
         SharedContext context = new SharedContext();
 
-        // Step 2: Set inputs to add a new course
+        // Simulate user flow:
+        // - Admin logs in, adds an FAQ
+        // - Logs out
+        // - Guest logs in and consults FAQ
         setMockInput(
-                concatUserInputs(loginAsAdmin,
+                concatUserInputs(
+                        loginAsAdmin,
                         addFAQItem,
-                        new String[]{"0"}, //view all courses
                         logout,
-                        exit)
+                        new String[] {
+                                "1", // CONSULT_FAQ
+                                "0", // Select section (New Topic)
+                                "-1", // Exit section
+                                "-1", // Exit FAQ
+                                "-1"  // Fully exit the system
+                        }
+                )
         );
 
-        // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
+
         startOutputCapture();
-        MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
+        MenuController menus = new MenuController(
+                context,
+                new TextUserInterface(),
+                new MockAuthenticationService(),
+                new MockEmailService()
+        );
+
         menus.mainMenu();
 
-        //tui.assertOutputContains("startTime = 06:00");
         assertOutputContains("What is SEPP?");
-        assertOutputContains("SEPP is a course");
-        assertOutputContains("CHOSEN");
-
-
+        assertOutputContains("> SEPP is a course");
     }
+
+    @Test
+    void testConsultFAQInvalidIndex() throws URISyntaxException, IOException, ParseException {
+        SharedContext context = new SharedContext();
+
+        setMockInput(
+                concatUserInputs(
+                        loginAsAdmin,
+                        addFAQItem,
+                        logout,
+                        new String[] {
+                                "1",   // CONSULT_FAQ
+                                "5",   // Invalid topic index
+                                "-1",  // Exit FAQ
+                                "-1"   // Exit system
+                        }
+                )
+        );
+
+        startOutputCapture();
+        MenuController menus = new MenuController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService());
+        menus.mainMenu();
+
+        assertOutputContains("Invalid option: 5");
+        assertOutputContains("What is SEPP?");
+    }
+
 }

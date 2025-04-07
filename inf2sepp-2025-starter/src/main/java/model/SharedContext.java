@@ -15,7 +15,7 @@ public class SharedContext {
     
     private final Map<String, Set<String>> faqTopicsUpdateSubscribers;
 
-    public SharedContext() { //TODO model coursework diagram has this taking a View object as a parameter. why?
+    public SharedContext() {
         this.currentUser = new Guest();
         this.inquiries = new ArrayList<>();
         course_manager = new CourseManager();

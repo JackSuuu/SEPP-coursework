@@ -2,6 +2,10 @@ package system_tests;
 
 import java.util.stream.Stream;
 
+/*
+    IntegrationTestCommon contains common tests to remove redundancies in system test code.
+ */
+
 public class IntegrationTestCommon
 {
     public static final String[] addTestCourse1 = {
@@ -40,7 +44,6 @@ public class IntegrationTestCommon
             //add a lecture
             "2", //add activity
             "TEST111",
-            "1", //lecture
             "2025-01-01",
             "06:00:00",
             "2025-01-01",
@@ -53,7 +56,6 @@ public class IntegrationTestCommon
 
             //add a tutorial
             "2", "TEST111",
-            "2", //add tutorial
             "2025-01-01",
             "07:00:00",
             "2025-01-01",
@@ -64,39 +66,6 @@ public class IntegrationTestCommon
             "40", //capacity
             "-1" //return to main menu
 
-    };
-
-    public static final String[] logout = {
-            "0"
-    };
-
-    public static final String[] loginAsStudent = {
-            "0",
-            "student1",
-            "student1pass"
-    };
-
-    public static final String[] loginAsAdmin = {
-            "0",
-            "admin1",
-            "admin1pass"
-    };
-
-    public static final String[] addTestCourseToTimetable = {
-            "5",
-            "0",
-            "TEST111", //add to timetable
-            "3", //choose activity
-            "TEST111",
-            "1", //lecture
-            "CHOSEN",
-            "2", //view timetable
-            "4" //return to main menu
-    };
-
-
-    public static final String[] exit = {
-            "-1", "-1" //exit
     };
 
     public static final String[] addTestCourse2 = {
@@ -117,7 +86,6 @@ public class IntegrationTestCommon
             //add a lecture
             "2", //add activity
             "TEST222",
-            "1", //lecture
             "2025-01-01",
             "06:00:00",
             "2025-01-01",
@@ -129,6 +97,18 @@ public class IntegrationTestCommon
             "-1" //return to main menu
     };
 
+    public static final String[] addTestCourseToTimetable = {
+            "5",
+            "0",
+            "TEST111", //add to timetable
+            "3", //choose activity
+            "TEST111",
+            "1", //lecture
+            "CHOSEN",
+            "2", //view timetable
+            "4" //return to main menu
+    };
+
     public static final String[] addFAQItem = {
             "2", "-2",                    // Select: Add FAQ item
             "New Topic",             // Input: Topic name
@@ -136,6 +116,27 @@ public class IntegrationTestCommon
             "SEPP is a course.",      // Input: FAQ answer
             "n",
             "-1",                       //return to main menu
+    };
+
+    public static final String[] loginAsAdmin = {
+            "0",
+            "admin1",
+            "admin1pass"
+    };
+
+    public static final String[] loginAsStudent = {
+            "0",
+            "student1",
+            "student1pass"
+    };
+
+    public static final String[] logout = {
+            "0"
+    };
+
+
+    public static final String[] exit = {
+            "-1", "-1" //exit
     };
 
 

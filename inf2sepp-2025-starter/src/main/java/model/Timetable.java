@@ -162,14 +162,12 @@ public class Timetable {
      * @param activityId the ID of the activity
      * @param status the status to set
      */
-
     public boolean chooseActivity(String courseCode, int activityId) {
         if (timeSlotsArrayList == null) {
-            //TODO assign
-            //TODO assign :p
+
             return true;
         }
-        for (TimeSlot slot : timeSlotsArrayList) { // TODO HASHMAP HERE
+        for (TimeSlot slot : timeSlotsArrayList) {
             if (slot.getCourseCode().equals(courseCode) && slot.getActivityId() == activityId) {
                 slot.setStatus(Statuses.CHOSEN);
                 break;

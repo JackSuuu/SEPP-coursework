@@ -11,8 +11,6 @@ import view.TextUserInterface;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class ConsultMemberOfStaffTests extends TUITest {
 
     @Test
