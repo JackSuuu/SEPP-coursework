@@ -31,11 +31,9 @@ public class AddFAQQASystemTests extends TUITest {
     @Test
     public void testAddFAQToNewTopic() throws URISyntaxException, IOException, ParseException { //relates to R14b
 
-        TUITest tui = new TUITest(); //provided helper test code.
-
         // Step 1: Log in as admin1
         SharedContext context = new SharedContext();
-        tui.loginAsAdminStaff(context);
+        loginAsAdminStaff(context);
 
         assertInstanceOf(AuthenticatedUser.class, context.currentUser);
         assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
@@ -52,11 +50,11 @@ public class AddFAQQASystemTests extends TUITest {
         );
 
         // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
-        tui.startOutputCapture();
+        startOutputCapture();
         MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
         menus.mainMenu();
 
-        tui.assertOutputContains("Created topic 'New Topic'");
+        assertOutputContains("Created topic 'New Topic'");
 
 
     }

@@ -18,6 +18,24 @@ public class IntegrationTestCommon
             "testsec@testsite",
             "12", //num tuts
             "4", //num labs
+            "-1" // main menu
+
+    };
+
+    public static final String[] addTestCourseWithActivities = {
+            //add a test course
+            "3",
+            "0",
+            "TEST111",
+            "Test Course",
+            "Integration test course",
+            "y",    //requires computer
+            "Tester",
+            "test@testsite",
+            "testsec",
+            "testsec@testsite",
+            "12", //num tuts
+            "4", //num labs
 
             //add a lecture
             "2", //add activity
@@ -56,6 +74,12 @@ public class IntegrationTestCommon
             "0",
             "student1",
             "student1pass"
+    };
+
+    public static final String[] loginAsAdmin = {
+            "0",
+            "admin1",
+            "admin1pass"
     };
 
     public static final String[] addTestCourseToTimetable = {

@@ -1,4 +1,4 @@
-package system_tests;
+package unit_tests;
 
 import controller.AuthenticatedUserController;
 import controller.GuestController;
@@ -11,6 +11,7 @@ import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import system_tests.TUITest;
 import view.TextUserInterface;
 
 import java.io.IOException;

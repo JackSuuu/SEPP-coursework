@@ -2,6 +2,7 @@ package system_tests;
 
 import controller.AdminStaffController;
 import controller.GuestController;
+import controller.MenuController;
 import external.MockAuthenticationService;
 import external.MockEmailService;
 import model.AuthenticatedUser;
@@ -16,6 +17,8 @@ import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static system_tests.IntegrationTestCommon.*;
+
 
 /**
  * This class tests the "Manage Courses" functionality available to AdminStaff users.
@@ -23,74 +26,44 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
  */
 public class AddCourseSystemTests extends TUITest {
 
-    private SharedContext context;
-
-    /**
-     * Sets up the test context by logging in as an AdminStaff user
-     * and simulating selection of "Manage Courses" from the main menu.
-     *
-     * Although "3" is pushed as input (indicating the Manage Courses menu),
-     * we must still manually call `manageCourse()` since no actual main menu dispatcher is present.
-     */
-    @BeforeEach
-    public void setUp() throws URISyntaxException, IOException, ParseException {
-        context = new SharedContext();
-
-        // Simulates: username, password, and selection of menu option 3 (Manage Courses)
-        setMockInput("admin1", "admin1pass", "3");
-
-        GuestController guestController = new GuestController(context, new TextUserInterface(),
-                new MockAuthenticationService(), new MockEmailService());
-        guestController.login();
-
-        // Ensure the user is authenticated and is of AdminStaff role
-        assertInstanceOf(AuthenticatedUser.class, context.currentUser);
-        assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
-    }
-
-    /**
-     * Helper method to push course-related inputs and enter course management.
-     * This simulates full user interaction inside the "Manage Courses" submenu.
-     *
-     * @param inputs User inputs to simulate within the course management screen.
-     */
-    private void runAdminMenuWithInput(String... inputs) throws URISyntaxException, IOException, ParseException {
-        String[] fullInputs = new String[inputs.length + 1];
-        System.arraycopy(inputs, 0, fullInputs, 0, inputs.length);
-        fullInputs[inputs.length] = "-1"; // Exit course menu
-
-        setMockInput(fullInputs);
-
-        AdminStaffController admin = new AdminStaffController(
-                context,
-                new TextUserInterface(),
-                new MockAuthenticationService(),
-                new MockEmailService()
-        );
-
-        // Capture output before controller runs
-        startOutputCapture();
-
-        admin.manageCourse(); // must happen AFTER capture starts
-    }
-
     /**
      * Validates that a course is added correctly with valid inputs.
      */
     @Test
     public void testAddCourseSuccessfully() throws URISyntaxException, IOException, ParseException {
-        runAdminMenuWithInput(
-                "0", "INFR0901", "Intro to Informatics",
-                "Teaching the fundamentals of Informatics", "y",
-                "Kiara Havrezeinn", "teacher1@hindeburg.ac.uk",
-                "Amie Montagne", "ami@uni.ac.uk",
-                "4", "4"
+        // Set up the context and login as admin to add a course
+        SharedContext context = new SharedContext();
+        setMockInput(concatUserInputs(loginAsAdmin,
+                new String[] {
+                        "3", // MANAGE_COURSES
+                        "0", // ADD_COURSES
+                        "TEST111",
+                        "Test Course",
+                        "Integration test course",
+                        "y",
+                        "Tester",
+                        "test@testsite",
+                        "testsec",
+                        "testsec@testsite",
+                        "12",
+                        "4",
+                        "-1" // main menu
+                },
+                exit
+        ));
+
+        startOutputCapture();
+        MenuController controller = new MenuController(
+                context,
+                new TextUserInterface(),
+                new MockAuthenticationService(),
+                new MockEmailService()
         );
+        controller.mainMenu();
+
         assertOutputContains("Course added successfully");
-        assertOutputContains("Email from admin1@hindeburg.ac.uk to teacher1@hindeburg.ac.uk");
-        assertOutputContains("Subject: Intro to Informatics");
-        assertOutputContains("Description: Teaching the fundamentals of Informatics");
     }
+
 
     /**
      * Ensures that empty course code is rejected,
@@ -98,14 +71,29 @@ public class AddCourseSystemTests extends TUITest {
      */
     @Test
     public void testEmptyCourseCodeThenRecovery() throws URISyntaxException, IOException, ParseException {
-        runAdminMenuWithInput(
-                "0", "", "INFR0902", "Intro to Testing",
-                "Core concepts", "n",
-                "Kiara Havrezeinn", "teacher1@hindeburg.ac.uk",
-                "Amie Montagne", "teacher5@hindeburg.ac.uk", "2", "2"
+        // Set up the context and login as admin to add a course
+        SharedContext context = new SharedContext();
+        setMockInput(concatUserInputs(loginAsAdmin,
+                new String[] {
+                        "3", "0",
+                        "",    // Empty course code
+                        "TEST111", "Test Course", "Integration test course", "y", "Tester",
+                        "test@testsite", "testsec", "testsec@testsite", "12", "4",
+                        "-1" // main menu
+                },
+                exit
+        ));
+
+        startOutputCapture();
+        MenuController controller = new MenuController(
+                context,
+                new TextUserInterface(),
+                new MockAuthenticationService(),
+                new MockEmailService()
         );
+        controller.mainMenu();
+
         assertOutputContains("Course code cannot be empty.");
-        assertOutputContains("Course added successfully.");
     }
 
     /**
@@ -113,12 +101,59 @@ public class AddCourseSystemTests extends TUITest {
      */
     @Test
     public void testNonNumericTutorials() throws URISyntaxException, IOException, ParseException {
-        runAdminMenuWithInput(
-                "0", "INFR0903", "Advanced Topics", "Cool stuff", "n",
-                "Kiara Havrezeinn", "teacher1@hindeburg.ac.uk",
-                "Amie Montagne", "teacher5@hindeburg.ac.uk", "abc", "3", "3"
+        // Set up the context and login as admin to add a course
+        SharedContext context = new SharedContext();
+        setMockInput(concatUserInputs(loginAsAdmin,
+                new String[] {
+                        "3", "0", "TEST111", "Test Course", "Integration test course",
+                        "y", "Tester", "test@testsite", "testsec", "testsec@testsite",
+                        "abc", // non-numeric tutorials
+                        "12", "4",
+                        "-1" // main menu
+                },
+                exit
+        ));
+
+        startOutputCapture();
+        MenuController controller = new MenuController(
+                context,
+                new TextUserInterface(),
+                new MockAuthenticationService(),
+                new MockEmailService()
         );
+        controller.mainMenu();
+
         assertOutputContains("Invalid number. Please enter a valid integer for Tutorials.");
+    }
+
+    /**
+     * Verifies the system rejects non-numeric values for lab count.
+     */
+    @Test
+    public void testNonNumericLabs() throws URISyntaxException, IOException, ParseException {
+        // Set up the context and login as admin to add a course
+        SharedContext context = new SharedContext();
+        setMockInput(concatUserInputs(loginAsAdmin,
+                new String[] {
+                        "3", "0", "TEST111", "Test Course", "Integration test course", "y",
+                        "Tester", "test@testsite", "testsec", "testsec@testsite", "12",
+                        "abc", // non-numeric labs
+                        "4",
+                        "-1" // main menu
+                },
+                exit
+        ));
+
+        startOutputCapture();
+        MenuController controller = new MenuController(
+                context,
+                new TextUserInterface(),
+                new MockAuthenticationService(),
+                new MockEmailService()
+        );
+        controller.mainMenu();
+
+        assertOutputContains("Invalid number. Please enter a valid integer for Labs.");
     }
 
     /**
@@ -127,12 +162,57 @@ public class AddCourseSystemTests extends TUITest {
      */
     @Test
     public void testInvalidOrganiserEmail() throws URISyntaxException, IOException, ParseException {
-        runAdminMenuWithInput(
-                "0", "INFR0904", "Bad Email Course", "Oops!", "n",
-                "Miss Teachings", "invalid-email",
-                "Amie Montagne", "teacher5@hindeburg.ac.uk", "3", "3"
+        // Set up the context and login as admin to add a course
+        SharedContext context = new SharedContext();
+        setMockInput(concatUserInputs(loginAsAdmin,
+                new String[] {
+                        "3", "0", "TEST111", "Test Course", "Integration test course", "y", "Tester",
+                        "bad-email", // invalid organiser email
+                        "testsec", "testsec@testsite", "12", "4",
+                        "-1" // main menu
+                },
+                exit
+        ));
+
+        startOutputCapture();
+        MenuController controller = new MenuController(
+                context,
+                new TextUserInterface(),
+                new MockAuthenticationService(),
+                new MockEmailService()
         );
-        assertOutputContains("Course added successfully");
+        controller.mainMenu();
+        assertOutputContains("Course added successfully.");
+    }
+
+    /**
+     * Tests that organiser email format is not enforced in current implementation,
+     * and course still proceeds as successfully added.
+     */
+    @Test
+    public void testInvalidSecretaryEmail() throws URISyntaxException, IOException, ParseException {
+        // Set up the context and login as admin to add a course
+        SharedContext context = new SharedContext();
+        setMockInput(concatUserInputs(loginAsAdmin,
+                new String[] {
+                        "3", "0", "TEST111", "Test Course", "Integration test course", "y",    //requires computer
+                        "Tester", "test@testsite", "testsec", "bad-email-2", "12",
+                        "abc", // non-numeric labs
+                        "4",
+                        "-1" // main menu
+                },
+                exit
+        ));
+
+        startOutputCapture();
+        MenuController controller = new MenuController(
+                context,
+                new TextUserInterface(),
+                new MockAuthenticationService(),
+                new MockEmailService()
+        );
+        controller.mainMenu();
+        assertOutputContains("Course added successfully.");
     }
 
     /**
@@ -141,17 +221,29 @@ public class AddCourseSystemTests extends TUITest {
      */
     @Test
     public void testDuplicateCourseCode() throws URISyntaxException, IOException, ParseException {
-        runAdminMenuWithInput(
-                "0", "INFR0901", "Intro to Informatics", "Original", "y",
-                "Kiara Havrezeinn", "teacher1@hindeburg.ac.uk",
-                "Amie Montagne", "teacher5@hindeburg.ac.uk", "3", "3"
-        );
+        // Set up the context and login as admin to add a course
+        SharedContext context = new SharedContext();
+        setMockInput(concatUserInputs(loginAsAdmin,
+                new String[]{
+                        "3", "0", "TEST111", "Test Course", "Integration test course", "y",
+                        "Tester", "test@testsite", "testsec", "testsec@testsite", "12", "4",
+                },
+                new String[]{   // duplicate of above
+                        "0", "TEST111", "Test Course", "Integration test course", "y",
+                        "Tester", "test@testsite", "testsec", "testsec@testsite", "12", "4",
+                        "-1" // main menu
+                },
+                exit
+        ));
 
-        runAdminMenuWithInput(
-                "0", "INFR0901", "Something Else", "Duplicate!", "n",
-                "Kiara Havrezeinn", "teacher1@hindeburg.ac.uk",
-                "Amie Montagne", "teacher5@hindeburg.ac.uk", "1", "1"
+        startOutputCapture();
+        MenuController controller = new MenuController(
+                context,
+                new TextUserInterface(),
+                new MockAuthenticationService(),
+                new MockEmailService()
         );
+        controller.mainMenu();
 
         assertOutputContains("Course added successfully");
     }

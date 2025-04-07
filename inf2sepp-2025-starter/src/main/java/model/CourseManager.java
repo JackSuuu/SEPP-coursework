@@ -57,7 +57,7 @@ public class CourseManager {
 
         if (hasCode(courseCode)) {
             KioskLogger.getInstance().log(CourseOrganiserEmail, "addCourse", courseInfo, "FAILURE (Error: Course with that code already exists)");
-            view.displayError("Course with that code already exists");
+            view.displayError("Course with that code already exists.");
             return;
         } else {
             getCourseArray().add(course);
@@ -260,7 +260,7 @@ public class CourseManager {
             result.add(course.toString());
         }
         if (result.isEmpty()) {
-            return "\nNot course available in the system now\n";
+            return "\nNo courses are available in the system right now.\n";
         } else {
             return result.toString();
         }

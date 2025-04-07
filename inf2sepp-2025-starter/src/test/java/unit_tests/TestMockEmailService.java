@@ -1,4 +1,4 @@
-package system_tests;
+package unit_tests;
 
 import external.MockEmailService;
 import org.junit.jupiter.api.Test;

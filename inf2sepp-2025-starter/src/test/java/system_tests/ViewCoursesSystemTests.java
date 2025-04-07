@@ -6,7 +6,7 @@ import external.MockEmailService;
 import model.AuthenticatedUser;
 import model.SharedContext;
 import org.json.simple.parser.ParseException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import view.TextUserInterface;
 
 import java.io.IOException;
@@ -17,39 +17,111 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static system_tests.IntegrationTestCommon.*;
 
 
-public class ViewCoursesSystemTests {
-
+class ViewCoursesSystemTests extends TUITest {
 
     @Test
-    public void mainSuccessScenario() throws URISyntaxException, IOException, ParseException {
-        //login as admin, add courses.
-        TUITest tui = new TUITest(); //provided helper test code.
+    void viewCourseAfterAdding() throws IOException, URISyntaxException, ParseException {
 
         // Step 1: Log in as admin1
         SharedContext context = new SharedContext();
-        tui.loginAsAdminStaff(context);
+        loginAsAdminStaff(context);
 
         assertInstanceOf(AuthenticatedUser.class, context.currentUser);
         assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
 
         // Step 2: Set inputs to add a new course
-        tui.setMockInput(
-                concatUserInputs(addTestCourse1,
-                        addTestCourse2,
+        setMockInput(
+                concatUserInputs(addTestCourseWithActivities,
                         new String[]{"3","4"}, //view all courses,
                         exit)
         );
 
         // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
-        tui.startOutputCapture();
+        startOutputCapture();
         MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
         menus.mainMenu();
 
-        //tui.assertOutputContains("startTime = 06:00");
-        tui.assertOutputContains("TEST111");
-        tui.assertOutputContains("TEST222");
+        assertOutputContains("courseCode = 'TEST111',\n" +
+                " name = 'Test Course',\n" +
+                " description = 'Integration test course',\n" +
+                " requiresComputers = true,\n" +
+                " courseOrganiserName = 'Tester',\n" +
+                " courseOrganiserEmail = 'test@testsite',\n" +
+                " courseSecretaryName = 'testsec',\n" +
+                " courseSecretaryEmail = 'testsec@testsite',\n" +
+                " requiredTutorials = 12,\n" +
+                " requiredLabs = 4");
+    }
 
 
+    @Test
+    void viewMultipleCoursesAfterAdding() throws URISyntaxException, IOException, ParseException {
+
+        // Step 1: Log in as admin1
+        SharedContext context = new SharedContext();
+        loginAsAdminStaff(context);
+
+        assertInstanceOf(AuthenticatedUser.class, context.currentUser);
+        assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
+
+        // Step 2: Set inputs to add a new course
+        setMockInput(
+                concatUserInputs(addTestCourseWithActivities, addTestCourse2,
+                        new String[]{"3","4"}, //view all courses,
+                        exit)
+        );
+
+        // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
+        startOutputCapture();
+        MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
+        menus.mainMenu();
+
+        assertOutputContains("courseCode = 'TEST111',\n" +
+                " name = 'Test Course',\n" +
+                " description = 'Integration test course',\n" +
+                " requiresComputers = true,\n" +
+                " courseOrganiserName = 'Tester',\n" +
+                " courseOrganiserEmail = 'test@testsite',\n" +
+                " courseSecretaryName = 'testsec',\n" +
+                " courseSecretaryEmail = 'testsec@testsite',\n" +
+                " requiredTutorials = 12,\n" +
+                " requiredLabs = 4");
+
+        assertOutputContains("courseCode = 'TEST222',\n" +
+                " name = 'Test Course 2',\n" +
+                " description = 'Integration test course 2',\n" +
+                " requiresComputers = false,\n" +
+                " courseOrganiserName = 'OtherTester',\n" +
+                " courseOrganiserEmail = 'test2@testsite',\n" +
+                " courseSecretaryName = 'othertestsec',\n" +
+                " courseSecretaryEmail = 'testsec2@testsite',\n" +
+                " requiredTutorials = 120,\n" +
+                " requiredLabs = 7");
+    }
+
+
+    @Test
+    void viewNoCourses() throws URISyntaxException, IOException, ParseException {
+
+        // Step 1: Log in as admin1
+        SharedContext context = new SharedContext();
+        loginAsAdminStaff(context);
+
+        assertInstanceOf(AuthenticatedUser.class, context.currentUser);
+        assertEquals("AdminStaff", ((AuthenticatedUser) context.currentUser).getRole());
+
+        // Step 2: Set inputs to add a new course
+        setMockInput(
+                concatUserInputs(new String[]{"3","4"}, //view all courses,
+                        exit)
+        );
+
+        // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
+        startOutputCapture();
+        MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
+        menus.mainMenu();
+
+        assertOutputContains("No courses are available in the system right now.");
     }
 
 

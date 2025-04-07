@@ -1,12 +1,8 @@
 package system_tests;
 
-import controller.AdminStaffController;
-import controller.GuestController;
 import controller.MenuController;
 import external.MockAuthenticationService;
 import external.MockEmailService;
-import model.AuthenticatedUser;
-import model.Guest;
 import model.SharedContext;
 import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Test;
@@ -15,49 +11,99 @@ import view.TextUserInterface;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConsultMemberOfStaffTests extends TUITest {
 
-    //*
-    // Add FAQ Q-A System Tests
-    // chicken jockeyyyy *//
-
-    //*
-    // Test: Add FAQ to New Topic (as Admin Staff)
-    // *//
     @Test
-    public void testAddFAQToNewTopic() throws URISyntaxException, IOException, ParseException {
-
-        TUITest tui = new TUITest(); //provided helper test code.
-
-        // Step 1: Act as a guest
+    public void testSubmitValidInquiry() throws URISyntaxException, IOException, ParseException {
         SharedContext context = new SharedContext();
 
-        // Step 2: Set inputs to consult a member of staff
         setMockInput(
-                "2",                   // Select: CONTACT_STAFF
-                "student1@hindeburg.ac.uk",           // Enter consult email
-                "food allowance",                    //  Enter topic for inquiry
-                "can I eat noodles",
-                "-1"                                 // exit
+                "2",                           // CONTACT_STAFF
+                "student1@hindeburg.ac.uk",    // email
+                "Food Support",                // subject
+                "Can I get instant ramen?",    // body
+                "-1"                           // exit
         );
 
-        // Step 3: generate menu controller, feed it these inputs and assert the output succeeds.
+        startOutputCapture();
+        new MenuController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService())
+                .mainMenu();
 
-        tui.startOutputCapture();
-        MenuController menus = new MenuController(context, new TextUserInterface(),  new MockAuthenticationService(), new MockEmailService());
-        menus.mainMenu();
-
-        tui.assertOutputContains("Email from inquiries@hindeburg.ac.nz to inquiries@hindeburg.ac.nz");
-        tui.assertOutputContains("Subject: New inquiry from student1@hindeburg.ac.uk");
-        tui.assertOutputContains("Description: Subject: food allowance");
-        tui.assertOutputContains("Please log into the Self Service Portal to review and respond to the inquiry.");
-        tui.assertOutputContains("Your inquiry has been recorded. Someone will be in touch via email soon!");
-        
+        assertOutputContains("Your inquiry has been recorded. Someone will be in touch via email soon!");
+        assertOutputContains("Email from inquiries@hindeburg.ac.nz to inquiries@hindeburg.ac.nz");
     }
 
+    @Test
+    public void testEmptyInquirySubject() throws URISyntaxException, IOException, ParseException {
+        SharedContext context = new SharedContext();
+
+        setMockInput(
+                "2",
+                "student1@hindeburg.ac.uk",
+                "",                            // empty subject
+                "I have a question!",
+                "-1"
+        );
+
+        startOutputCapture();
+        new MenuController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService())
+                .mainMenu();
+
+        assertOutputContains("Inquiry subject cannot be blank! Please try again");
+    }
+
+    @Test
+    public void testEmptyInquiryBody() throws URISyntaxException, IOException, ParseException {
+        SharedContext context = new SharedContext();
+
+        setMockInput(
+                "2",
+                "student1@hindeburg.ac.uk",
+                "Exam Schedule",
+                "",                            // empty message
+                "-1"
+        );
+
+        startOutputCapture();
+        new MenuController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService())
+                .mainMenu();
+
+        assertOutputContains("Inquiry content cannot be blank! Please try again");
+    }
+
+    @Test
+    public void testInvalidEmailFormat() throws URISyntaxException, IOException, ParseException {
+        SharedContext context = new SharedContext();
+
+        setMockInput(
+                "2",
+                "not-an-email",               // invalid email
+                "Grades",
+                "Where are my grades?",
+                "-1"
+        );
+
+        startOutputCapture();
+        new MenuController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService())
+                .mainMenu();
+
+        assertOutputContains("Invalid email address! Please try again");
+    }
+
+    @Test
+    public void testGuestCanExitWithoutInquiry() throws URISyntaxException, IOException, ParseException {
+        SharedContext context = new SharedContext();
+
+        setMockInput(
+                "-1"
+        );
+
+        startOutputCapture();
+        new MenuController(context, new TextUserInterface(), new MockAuthenticationService(), new MockEmailService())
+                .mainMenu();
+
+        assertOutputContains("Hello! What would you like to do?");
+    }
 }

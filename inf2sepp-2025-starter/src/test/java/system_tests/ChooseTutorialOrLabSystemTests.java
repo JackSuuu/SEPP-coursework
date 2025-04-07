@@ -33,7 +33,7 @@ public class ChooseTutorialOrLabSystemTests extends TUITest
 
         // Step 2: Set inputs to add a new course
         tui.setMockInput(
-                concatUserInputs(addTestCourse1,
+                concatUserInputs(addTestCourseWithActivities,
                         addTestCourse2,
                         new String[]{"4"}, //view all courses
                         logout,
