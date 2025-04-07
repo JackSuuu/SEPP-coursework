@@ -160,7 +160,6 @@ public class Timetable {
      * 
      * @param courseCode the course code
      * @param activityId the ID of the activity
-     * @param status the status to set
      */
     public boolean chooseActivity(String courseCode, int activityId) {
         if (timeSlotsArrayList == null) {
